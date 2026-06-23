@@ -1,7 +1,6 @@
 package kd.mgproj.domain.profile.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import kd.mgproj.common.entity.BaseEntity;
 import kd.mgproj.common.enums.Gender;
 import kd.mgproj.common.enums.HouseholdType;
@@ -14,6 +13,8 @@ import java.util.Date;
 @Entity
 @Table(name = "user_profile")
 public class UsersProfileEntity extends BaseEntity {
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false)
   private UsersEntity users;
 
   private Date birthDate;

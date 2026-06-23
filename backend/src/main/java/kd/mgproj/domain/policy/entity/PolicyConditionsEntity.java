@@ -1,13 +1,14 @@
 package kd.mgproj.domain.policy.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import kd.mgproj.common.entity.BaseEntity;
 import kd.mgproj.common.enums.*;
 
 @Entity
 @Table(name = "policy_conditions")
 public class PolicyConditionsEntity extends BaseEntity {
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "policy_id", nullable = false)
   private PoliciesEntity policy;
 
   private int minAge;
