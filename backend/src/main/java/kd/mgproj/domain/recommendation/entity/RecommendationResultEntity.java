@@ -1,22 +1,23 @@
 package kd.mgproj.domain.recommendation.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import kd.mgproj.common.entity.BaseEntity;
 import kd.mgproj.domain.policy.entity.PoliciesEntity;
 import kd.mgproj.domain.user.entity.UsersEntity;
-import org.w3c.dom.Text;
 
 import java.text.DecimalFormat;
 
 @Entity
 @Table(name = "recommendationResult")
 public class RecommendationResultEntity extends BaseEntity {
+  @ManyToOne(fetch = FetchType.LAZY)
   private UsersEntity users;
 
+  @ManyToOne(fetch = FetchType.LAZY)
   private PoliciesEntity policies;
 
   private DecimalFormat score;
 
-  private Text reason;
+  @Column(columnDefinition = "TEXT")
+  private String reason;
 }
