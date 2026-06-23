@@ -1,11 +1,11 @@
 package kd.mgproj.domain.policy.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import kd.mgproj.common.entity.BaseEntity;
 import kd.mgproj.common.enums.PolicyCategory;
 import kd.mgproj.common.enums.PolicyStatus;
-import org.w3c.dom.Text;
 
 import java.util.Date;
 
@@ -14,7 +14,8 @@ import java.util.Date;
 public class PoliciesEntity extends BaseEntity {
   private String title;
 
-  private Text description;
+  @Column(columnDefinition = "TEXT")
+  private String description;
 
   private String organization;
 
