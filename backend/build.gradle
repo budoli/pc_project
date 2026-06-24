@@ -19,39 +19,27 @@ repositories {
 }
 
 dependencies {
-    // Spring Boot
-    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-
-    // Security
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    testImplementation 'org.springframework.security:spring-security-test'
-
-    // Database
-    runtimeOnly 'org.postgresql:postgresql'
-
-    // JWT
-    implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
-
-    // API Documentation
-    //swagger
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
-
-    // Lombok
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
-
-    // Development
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
-    // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    //security
+//    implementation 'org.springframework.boot:spring-boot-starter-security'
+    testImplementation 'org.springframework.security:spring-security-test' // 테스트 코드 작성하려면 활성화
+
+    runtimeOnly 'org.postgresql:postgresql'
+
+
+    //lombok
+    compileOnly 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+
+    //swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
 }
 
 tasks.named('test') {
