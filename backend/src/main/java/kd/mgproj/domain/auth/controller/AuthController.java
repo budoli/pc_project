@@ -23,6 +23,11 @@ public class AuthController {
     private final AuthService authService;
     private final JwtProvider jwtProvider;
 
+    /**
+     * 회원가입 요청
+     * @param signupRequestDto 로그인을 하기 위한 최소한의 정보
+     * @return                 201 created
+     */
     @Operation(summary = "회원가입")
     @PostMapping(value = {"/signup"})
     public ResponseEntity<Void> signup(
@@ -33,6 +38,11 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    /**
+     * 로그인 요청
+     * @param loginRequestDto email, password
+     * @return                AccessToken, RefreshToken
+     */
     @Operation(summary = "로그인")
     @PostMapping(value = {"/login"})
     public ResponseEntity<TokenResponseDto> login(
@@ -52,6 +62,11 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * 토큰 재발급 요청
+     * @param request Header에서 Token
+     * @return        RefreshToken
+     */
     @Operation(summary = "토큰 재발급")
     @PostMapping(value = {"/reissue"})
     public ResponseEntity<TokenResponseDto> reissue(HttpServletRequest request) {
