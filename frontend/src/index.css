@@ -1,5 +1,27 @@
 @import "tailwindcss";
 
+@layer components {
+  .xl2 {
+    @apply text-2xl font-bold leading-[140%] tracking-[-0.025em];
+  }
+
+  .xl {
+    @apply text-xl font-semibold leading-[140%] tracking-[-0.025em];
+  }
+
+  .lg {
+    @apply text-lg leading-[140%] tracking-[-0.025em];
+  }
+
+  .base {
+    @apply text-base leading-[140%] tracking-[-0.025em];
+  }
+
+  .sm {
+    @apply text-sm leading-[140%] tracking-[-0.025em];
+  }
+}
+
 @font-face {
   font-family: 'Pretendard';
   src: url('./assets/fonts/pretendardvariable.css');
