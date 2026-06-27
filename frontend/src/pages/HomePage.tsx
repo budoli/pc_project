@@ -1,21 +1,17 @@
-import { useState } from "react"
-import LoginModal from "../features/auth/LoginModal"
+import Header from "./Header";
+import Sidebar from "./Sidebar";
 
 const HomePage = () => {
-  const [open, SetOpen] = useState(true);
 
-  return (
-    <>
-      <button
-        onClick={() => SetOpen(true)}
-        className=""
-      >
-        로그인
-      </button>
+    return (
+        <div className="min-h-screen text-gray-900">
+            <Header />
+            <div className="flex">
+                <Sidebar />
+            </div>
 
-      {open && <LoginModal onClose={() => SetOpen(false)} />}
-    </>
-  )
-}
+        </div>
+    );
+};
 
-export default HomePage
+export default HomePage;
