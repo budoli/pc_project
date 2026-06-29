@@ -4,9 +4,11 @@ import kd.mgproj.common.enums.Role;
 import kd.mgproj.core.error.ErrorCode;
 import kd.mgproj.core.error.exception.BusinessException;
 import kd.mgproj.core.security.jwt.JwtProvider;
+import kd.mgproj.domain.profile.entity.UsersProfileEntity;
+import kd.mgproj.domain.profile.repository.UserProfileRepository;
 import kd.mgproj.domain.user.dto.request.LoginRequestDto;
 import kd.mgproj.domain.user.dto.request.SignupRequestDto;
-import kd.mgproj.domain.auth.dto.TokenResponseDto;
+import kd.mgproj.domain.auth.dto.response.TokenResponseDto;
 import kd.mgproj.domain.user.entity.UsersEntity;
 import kd.mgproj.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
+    private final UserProfileRepository profileRepository;
+    private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
 
@@ -24,8 +28,12 @@ public class AuthServiceImpl implements AuthService {
     public void signup(SignupRequestDto dto) {
         String email = dto.email();
 
+        if (!emailService.isVerified(email)) {
+            throw new BusinessException(ErrorCode.EMAIL_NOT_VERIFIED);
+        }
+
         if (userRepository.existsByEmail(email)) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+            throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
         }
 
         String encodedPassword = passwordEncoder.encode(dto.password());
@@ -36,7 +44,20 @@ public class AuthServiceImpl implements AuthService {
                 encodedPassword
         );
 
+        UsersProfileEntity profile = UsersProfileEntity.createUser(
+                user,
+                dto.birthDate(),
+                dto.gender(),
+                dto.region(),
+                dto.jobStatus(),
+                dto.incomeLevel(),
+                dto.householdType(),
+                dto.interests()
+        );
+
         userRepository.save(user);
+        profileRepository.save(profile);
+        emailService.deleteVerified(email);
     }
 
     @Override

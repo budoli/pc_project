@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import kd.mgproj.core.security.jwt.JwtProvider;
 import kd.mgproj.domain.user.dto.request.LoginRequestDto;
 import kd.mgproj.domain.user.dto.request.SignupRequestDto;
-import kd.mgproj.domain.auth.dto.TokenResponseDto;
+import kd.mgproj.domain.auth.dto.response.TokenResponseDto;
 import kd.mgproj.domain.auth.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -48,7 +48,6 @@ public class AuthController {
     public ResponseEntity<TokenResponseDto> login(
             @RequestBody LoginRequestDto loginRequestDto
             ) {
-        authService.login(loginRequestDto);
 
         return ResponseEntity.ok(authService.login(loginRequestDto));
 
