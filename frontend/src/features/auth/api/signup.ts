@@ -1,12 +1,15 @@
-export interface SignupRequest  {
+type SignupRequest = {
   email: string;
-  password :string;
-  name:string;
-  birthDate:string;
-  gender:string;
-  region:string;
-  jobStatus:string;
-}
+  password: string;
+  name: string;
+  birthDate: string;
+  gender: string;
+  region: string;
+  jobStatus: string;
+  incomeLevel: string;
+  householdType: string;
+  interests: string;
+};
 
 export const signup = async (body : SignupRequest): Promise<void> => {
     const response = await fetch("http://localhost:8080/api/v1/auth/signup", {
