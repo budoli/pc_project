@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import kd.mgproj.common.enums.Role;
 import kd.mgproj.core.security.UserDetailServiceImpl;
@@ -37,7 +38,6 @@ public class JwtProvider {
     private long refreshExpiration;
 
     private static final String ACCESS_HEADER = "Authorization";
-    private static final String REFRESH_HEADER = "Refresh";
     private static final String BEARER_PREFIX = "Bearer ";
     private static final String CLAIM_ROLE = "role";
 
@@ -82,7 +82,19 @@ public class JwtProvider {
     }
 
     public String resolveRefreshToken(HttpServletRequest req) {
-        return resolveToken(req.getHeader(REFRESH_HEADER));
+        Cookie[] cookies = req.getCookies();
+
+        if (cookies == null) {
+            return null;
+        }
+
+        for (Cookie cookie : cookies) {
+            if ("refreshToken".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+
+        return null;
     }
 
     public String resolveToken(String header) {

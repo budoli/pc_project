@@ -3,12 +3,15 @@ package kd.mgproj.domain.auth.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import kd.mgproj.core.security.jwt.JwtProvider;
+import kd.mgproj.domain.auth.dto.response.LoginResponseDto;
 import kd.mgproj.domain.user.dto.request.LoginRequestDto;
 import kd.mgproj.domain.user.dto.request.SignupRequestDto;
 import kd.mgproj.domain.auth.dto.response.TokenResponseDto;
 import kd.mgproj.domain.auth.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -45,20 +48,33 @@ public class AuthController {
      */
     @Operation(summary = "로그인")
     @PostMapping(value = {"/login"})
-    public ResponseEntity<TokenResponseDto> login(
+    public ResponseEntity<LoginResponseDto> login(
             @RequestBody LoginRequestDto loginRequestDto
             ) {
+        TokenResponseDto token = authService.login(loginRequestDto);
 
-        return ResponseEntity.ok(authService.login(loginRequestDto));
+        ResponseCookie cookie = buildRefreshCookie(token.refreshToken());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(new LoginResponseDto(token.accessToken()));
 
     }
 
     @Operation(summary = "로그아웃")
     @PostMapping(value = {"/logout"})
     public ResponseEntity<Void> logout() {
-        authService.logout();
+        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(0)
+                .build();
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.noContent()
+                .header(HttpHeaders.SET_COOKIE,deleteCookie.toString())
+                .build();
     }
 
     /**
@@ -68,11 +84,27 @@ public class AuthController {
      */
     @Operation(summary = "토큰 재발급")
     @PostMapping(value = {"/reissue"})
-    public ResponseEntity<TokenResponseDto> reissue(HttpServletRequest request) {
+    public ResponseEntity<LoginResponseDto> reissue(HttpServletRequest request) {
         String refreshToken = jwtProvider.resolveRefreshToken(request);
 
-        return ResponseEntity.ok(authService.reissue(refreshToken));
+        TokenResponseDto token = authService.reissue(refreshToken);
 
+        ResponseCookie cookie = buildRefreshCookie(token.refreshToken());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(new LoginResponseDto(token.accessToken()));
+
+    }
+
+    private ResponseCookie buildRefreshCookie(String refreshToken) {
+        return ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(60*60*24*7)
+                .build();
     }
 }
 

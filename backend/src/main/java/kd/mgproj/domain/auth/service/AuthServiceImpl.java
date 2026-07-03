@@ -82,11 +82,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void logout() {
-
-    }
-
-    @Override
     public TokenResponseDto reissue(String refreshToken) {
 
         if (refreshToken == null || !jwtProvider.validateToken(refreshToken)) {

@@ -1,19 +1,20 @@
 import { Logo } from "@/assets";
-import { Button, Input } from "@/shared/ui" 
+import { Button, Input } from "@/shared/ui"
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { login } from "@/features/auth/api/login";
 import { useAuthStore } from "@/features/auth/store/authStore";
-
+import { getCurrentUser } from "../user/api/getCurrentUser";
 
 type Props = {
   onClose: () => void;
 }
 
+
 const LoginModal = ({ onClose }: Props) => {
   const [email, setEmail] = useState("user1@user.com");
   const [password, setPassword] = useState("user1234");
-  const {setAccessToken} = useAuthStore();
+  const { setAccessToken, setUser } = useAuthStore();
 
   const handleLogin = async () => {
     const data = await login({
@@ -22,6 +23,11 @@ const LoginModal = ({ onClose }: Props) => {
     });
 
     setAccessToken(data.accessToken);
+
+    const user = await getCurrentUser(data.accessToken);
+
+    setUser(user);
+
     onClose();
   }
 
