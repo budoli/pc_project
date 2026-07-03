@@ -2,28 +2,82 @@ package kd.mgproj.domain.policy.entity;
 
 import jakarta.persistence.*;
 import kd.mgproj.common.entity.BaseEntity;
-import kd.mgproj.common.enums.*;
+import kd.mgproj.domain.policy.dto.YouthPolicyItem;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "policy_conditions")
 public class PolicyConditionsEntity extends BaseEntity {
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "policy_id", nullable = false)
+
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "policy_id", nullable = false, unique = true)
   private PoliciesEntity policy;
 
-  private int minAge;
+  private Integer minAge;
 
-  private int maxAge;
+  private Integer maxAge;
 
-  private Gender gender;
-
+  @Column(columnDefinition = "TEXT")
   private String region;
 
-  private IncomeLevel incomeLevel;
+  @Column(columnDefinition = "TEXT")
+  private String incomeCondition;
 
-  private JobStatus jobStatus;
+  @Column(columnDefinition = "TEXT")
+  private String jobCondition;
 
-  private HouseholdType householdType;
+  @Column(columnDefinition = "TEXT")
+  private String educationCondition;
 
-  private EducationLevel educationLevel;
+  @Column(columnDefinition = "TEXT")
+  private String additionalCondition;
+
+  @Column(columnDefinition = "TEXT")
+  private String excludedTarget;
+
+  public static PolicyConditionsEntity from(
+          PoliciesEntity policy,
+          YouthPolicyItem item
+  ) {
+    PolicyConditionsEntity condition = new PolicyConditionsEntity();
+
+    condition.policy = policy;
+    condition.minAge = parseInt(item.sprtTrgtMinAge());
+    condition.maxAge = parseInt(item.sprtTrgtMaxAge());
+    condition.region = item.zipCd();
+    condition.incomeCondition = item.earnEtcCn();
+    condition.jobCondition = item.jobCd();
+    condition.educationCondition = item.schoolCd();
+    condition.additionalCondition = item.addAplyQlfcCndCn();
+    condition.excludedTarget = item.ptcpPrpTrgtCn();
+
+    return condition;
+  }
+
+  public void updateFrom(YouthPolicyItem item) {
+    this.minAge = parseInt(item.sprtTrgtMinAge());
+    this.maxAge = parseInt(item.sprtTrgtMaxAge());
+    this.region = item.zipCd();
+    this.incomeCondition = item.earnEtcCn();
+    this.jobCondition = item.jobCd();
+    this.educationCondition = item.schoolCd();
+    this.additionalCondition = item.addAplyQlfcCndCn();
+    this.excludedTarget = item.ptcpPrpTrgtCn();
+  }
+
+  private static Integer parseInt(String value) {
+    if (value == null || value.isBlank()) {
+      return null;
+    }
+
+    try {
+      return Integer.parseInt(value.trim());
+    } catch (NumberFormatException e) {
+      return null;
+    }
+  }
 }
