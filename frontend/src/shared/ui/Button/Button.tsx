@@ -1,7 +1,7 @@
 type ButtonProps = {
     children: React.ReactNode;
-    variant?: "primary" | "secondary" | "google" | "kakao";
-    size?: "sm" | "md" | "lg" | "input";
+    variant?: "primary" | "secondary" | "google" | "kakao" | "ghost";
+    size?: "sm" | "md" | "lg" | "input" | "menu";
     className?: string;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
@@ -17,6 +17,7 @@ const Button = ({
         secondary: "border border-gray-300 bg-white",
         google: "border border-gray-300 bg-white",
         kakao: "bg-[#FEE500] text-black",
+        ghost: "bg-transparent hover:bg-gray-100",
     };
 
     const sizes = {
@@ -24,6 +25,7 @@ const Button = ({
         md: "h-10 w-auto px-4 rounded-lg text-sm",
         lg: "h-12 w-full px-4 rounded-lg text-sm",
         input: "h-full px-6 rounded-none border-l border-gray-300 text-sm",
+        menu: "h-11 w-full justify-start rounded-md px-3 text-sm",
     };
 
     return (

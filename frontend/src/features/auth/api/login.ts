@@ -1,12 +1,5 @@
-export interface LoginRequest  {
-  email: string;
-  password :string;
-}
-
-export interface LoginResponse  {
-  accessToken: string;
-  refreshToken: string;
-}
+import type { LoginRequest } from "../types/LoginRequest";
+import type { LoginResponse } from "../types/LoginResponse";
 
 export const login = async (body : LoginRequest): Promise<LoginResponse> => {
     const response = await fetch("http://localhost:8080/api/v1/auth/login", {

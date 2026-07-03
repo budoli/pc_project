@@ -7,6 +7,5 @@ import kd.mgproj.domain.auth.dto.response.TokenResponseDto;
 public interface AuthService {
     void signup(SignupRequestDto signupRequestDto);
     TokenResponseDto login(LoginRequestDto loginRequestDto);
-    void logout();
     TokenResponseDto reissue(String refreshToken);
 }
