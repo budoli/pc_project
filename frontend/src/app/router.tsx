@@ -1,17 +1,31 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import HomePage from '../pages/HomePage'
-import Signup from '../pages/Signup'
+import { createBrowserRouter } from "react-router-dom";
+
+import AppLayout from "./layouts/AppLayout";
+import AuthLayout from "./layouts/AuthLayout";
+
+import HomePage from "@/pages/HomePage";
+import Signup from "@/pages/Signup";
 
 
-const Router = () => {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path='/' element={<HomePage />} />
-        <Route path='/signup' element={<Signup />} />
-    </Routes>
-    </BrowserRouter >
-  )
-}
+export const router = createBrowserRouter([
+    {
+        path: "/",
+        element: <AppLayout />,
+        children: [
+            {
+                index: true,
+                element: <HomePage />,
+            },
+        ],
+    },
+    {
+        element: <AuthLayout />,
+        children: [
+            {
+                path: "signup",
+                element: <Signup />,
+            },
+        ],
+    },
 
-export default Router
+]);

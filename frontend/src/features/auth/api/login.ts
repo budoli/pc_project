@@ -4,7 +4,8 @@ export interface LoginRequest  {
 }
 
 export interface LoginResponse  {
-  accessToken: string
+  accessToken: string;
+  refreshToken: string;
 }
 
 export const login = async (body : LoginRequest): Promise<LoginResponse> => {

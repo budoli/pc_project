@@ -50,7 +50,13 @@ public enum ErrorCode {
     JWT_EMPTY(400, "AUTH-400", "토큰이 비어있습니다"),
 
     // 토큰 재사용 감지
-    REFRESH_TOKEN_REUSED(401, "AUTH-401-TOKEN-REUSE", "비정상적인 토큰 사용이 감지되었습니다");
+    REFRESH_TOKEN_REUSED(401, "AUTH-401-TOKEN-REUSE", "비정상적인 토큰 사용이 감지되었습니다"),
+
+    // Email 인증
+    EMAIL_CODE_EXPIRED(400, "EMAIL-400", "인증번호가 만료되었습니다."),
+    EMAIL_CODE_MISMATCH(400, "EMAIL-401", "인증번호가 일치하지 않습니다."),
+    EMAIL_NOT_VERIFIED(400, "EMAIL-402", "인증이 완료되지 않았습니다.");
+
 
     private final int status;
     private final String errorCode;

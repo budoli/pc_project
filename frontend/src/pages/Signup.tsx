@@ -1,9 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Logo } from "../assets";
-import { Input, DateInput, Button, Select } from "@/shared/ui";
-import { useState } from "react";
-import { signup } from "@/features/auth/api/signup";
+import { Input, Button } from "@/shared/ui";
+import { useEffect, useState } from "react";
 import InputGroup from "@/shared/ui/Input/InputGroup";
+import { sendEmailVerification } from "@/features/auth/api/sendEmailVerification";
+import { useSignupStore } from "@/features/auth/store/signupStore";
+import { verifyEmailCode } from "@/features/auth/api/verifyEmailCode";
 
 const SignupPage = () => {
     const [form, setForm] = useState({
@@ -11,28 +13,33 @@ const SignupPage = () => {
         password: "",
         passwordConfirm: "",
         name: "",
-        birthDate: "",
-        gender: "",
-        region: "",
-        jobStatus: "",
     });
 
-    const handlerSignup = async () => {
-        if (form.password !== form.passwordConfirm) {
-            alert("비밀번호가 일치하지 않습니다.");
-            return;
-        }
+    const [emailCode, setEmailCode] = useState("");
+    const [isEmailSent, setIsEmailSent] = useState(false);
+    const [isEmailVerified, setIsEmailVerified] = useState(false);
+    const [remainingTime, setRemainingTime] = useState(0);
 
-        const { passwordConfirm, ...signupRequest } = form;
+    const navigate = useNavigate();
+    const setSignupForm = useSignupStore((state) => state.setSignupForm);
 
-        try {
-            await signup(signupRequest);
-            alert("회원가입이 완료되었습니다.");
-        } catch (error) {
-            console.log(error);
-            alert("회원가입에 실패했습니다.");
-        }
-    };
+    useEffect(() => {
+        if (!isEmailSent || isEmailVerified || remainingTime <= 0) return;
+
+        const timer = setInterval(() => {
+            setRemainingTime((prev) => prev - 1);
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [isEmailSent, isEmailVerified, remainingTime]);
+
+    const formatTime = (seconds: number) => {
+        const min = Math.floor(seconds / 60);
+        const sec = seconds % 60;
+
+        return `${min}:${String(sec).padStart(2, "0")}`;
+    }
+
 
     const handleEmailVerify = async () => {
         if (!form.email) {
@@ -40,8 +47,67 @@ const SignupPage = () => {
             return;
         }
 
-        // 이메일 인증 API 호출
-        console.log(form.email);
+        try {
+            await sendEmailVerification({
+                email: form.email,
+            });
+
+            setIsEmailSent(true);
+            setIsEmailVerified(false);
+            setRemainingTime(180);
+
+            alert("인증번호가 발송되었습니다.");
+        } catch (error) {
+            console.log(error);
+            alert("이메일 인증 요청에 실패했습니다.");
+        }
+    };
+
+    const handleVerifyEmailCode = async () => {
+        if (!emailCode.trim()) {
+            alert("인증번호를 입력해주세요");
+            return;
+        }
+
+        if (remainingTime <= 0) {
+            alert("인증 시간이 만료되었습니다.");
+            return;
+        }
+
+        try {
+            await verifyEmailCode({
+                email: form.email.trim(),
+                code: emailCode.trim(),
+            })
+            
+            setIsEmailVerified(true);
+            setRemainingTime(0);
+
+            alert("이메일 인증이 완료되었습니다.");
+        } catch (error) {
+            console.log(error);
+            alert("인증번호가 올바르지 않습니다.");
+        }
+    }
+
+    const handlerSignup = () => {
+        if (!isEmailVerified) {
+            alert("이메일 인증을 완료해주세요.");
+            return;
+        }
+
+        if (form.password !== form.passwordConfirm) {
+            alert("비밀번호가 일치하지 않습니다.");
+            return;
+        }
+
+        setSignupForm({
+            email: form.email,
+            password: form.password,
+            name: form.name,
+        });
+
+        navigate("/signup/profile");
     };
 
     return (
@@ -80,7 +146,37 @@ const SignupPage = () => {
                             </Button>
                         }
                     />
-
+                    {isEmailSent && (
+                        <InputGroup
+                            label="인증번호"
+                            placeholder="인증번호 6자리를 입력하세요"
+                            value={emailCode}
+                            onChange={(e) => setEmailCode(e.target.value)}
+                            button={
+                                <Button
+                                    type="button"
+                                    size="input"
+                                    onClick={handleVerifyEmailCode}
+                                    disabled={isEmailVerified || remainingTime <= 0}
+                                >
+                                    확인
+                                </Button>
+                            }
+                            helperText={
+                                isEmailVerified ? (
+                                    <span className="text-green-600">
+                                        이메일 인증이 완료되었습니다.
+                                    </span>
+                                ) : remainingTime > 0 ? (
+                                    <>남은 시간 {formatTime(remainingTime)}</>
+                                ) : (
+                                    <span className="text-red-500">
+                                        인증 시간이 만료되었습니다.
+                                    </span>
+                                )
+                            }
+                        />
+                    )}
                     <Input
                         label="비밀번호"
                         type="password"
@@ -114,61 +210,8 @@ const SignupPage = () => {
                         }
                     />
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <DateInput
-                            label="생년월일"
-                            value={form.birthDate}
-                            onChange={(e) =>
-                                setForm({ ...form, birthDate: e.target.value })
-                            }
-                        />
-
-                        <Select
-                            label="성별"
-                            options={[
-                                { label: "선택해주세요", value: "" },
-                                { label: "남성", value: "MALE" },
-                                { label: "여성", value: "FEMALE" },
-                            ]}
-                            onChange={(e) =>
-                                setForm({ ...form, gender: e.target.value })
-                            }
-                        />
-
-                        <Select
-                            label="거주 지역"
-                            options={[
-                                { label: "선택해주세요", value: "" },
-                                { label: "서울", value: "SEOUL" },
-                                { label: "경기", value: "GYEONGGI" },
-                                { label: "인청", value: "INCHEON" },
-                            ]}
-                            onChange={(e) =>
-                                setForm({ ...form, region: e.target.value })
-                            }
-                        />
-
-                        <Select
-                            label="직업"
-                            options={[
-                                { label: "선택해주세요", value: "" },
-                                { label: "학생", value: "STUDENT" },
-                                { label: "취업준비생", value: "JOB_SEEKER" },
-                                { label: "직장인", value: "WORKER" },
-                                { label: "무직", value: "NONE" },
-                            ]}
-                            onChange={(e) =>
-                                setForm({ ...form, jobStatus: e.target.value })
-                            }
-                        />
-                    </div>
-
-                    <Button
-                        className="mt-3"
-                        variant="primary"
-                        onClick={handlerSignup}
-                    >
-                        회원가입
+                    <Button onClick={handlerSignup} className="w-full">
+                        다음
                     </Button>
                 </div>
 

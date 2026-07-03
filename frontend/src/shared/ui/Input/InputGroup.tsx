@@ -2,12 +2,14 @@ type InputGroupProps = {
   label: string;
   icon?: React.ReactNode;
   button?: React.ReactNode;
+  helperText?: React.ReactNode;
 } & React.InputHTMLAttributes<HTMLInputElement>;
 
 const InputGroup = ({
   label,
   icon,
   button,
+  helperText,
   className = "",
   ...props
 }: InputGroupProps) => {
@@ -31,8 +33,17 @@ const InputGroup = ({
           />
         </div>
 
-        {button}
+        {button && (
+          <div className="shrink-0 border-l border-gray-300">
+            {button}
+          </div>
+        )}
       </div>
+      {helperText && (
+        <div className="xs text-gray-500">
+      {helperText}
+        </div>
+      )}
     </div>
   );
 };

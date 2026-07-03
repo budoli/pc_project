@@ -1,37 +1,51 @@
+import { Logo } from "@/assets";
+import { useAuthStore } from "@/features/auth/store/authStore";
+
 const Sidebar = () => {
-    const items = ["새 채팅", "북마크", "나중에 추가"];
-    const policies = Array(4).fill("policy 예시 예시");
-    const histories = Array(4).fill("history 예시 예시");
+  const accessToken = useAuthStore((state) => state.accessToken);
 
-    return (
-        <aside className="w-[260px] bg-white px-7 py-5">
-            <nav className="space-y-3 sm">
-                {items.map((item) => (
-                    <button key={item} className="block  hover:font-medium">
-                        ㅁ {item}
-                    </button>
-                ))}
-            </nav>
+  return (
+    <aside className="fixed left-0 top-0 h-screen w-[260px] bg-white px-8 py-6">
+      <div className="mb-12 flex items-center">
+        <img src={Logo} alt="로고" className="h-10 w-10 object-contain" />
+      </div>
+    
+      <nav className="space-y-5 text-[15px]">
+        <button className="block">□ 새 채팅</button>
 
-            <section className="mt-14">
-                <h3 className="mb-4 sm font-bold">관심정책</h3>
-                <div className="space-y-3 sm">
-                    {policies.map((item, index) => (
-                        <p key={index}>{item}</p>
-                    ))}
-                </div>
-            </section>
+        {accessToken && (
+          <>
+            <button className="block">□ 북마크</button>
+            <button className="block">□ 나중에 추가</button>
+          </>
+        )}
+      </nav>
 
-            <section className="mt-14">
-                <h3 className="mb-4 sm font-bold">이전 대화</h3>
-                <div className="space-y-3 sm">
-                    {histories.map((item, index) => (
-                        <p key={index}>{item}</p>
-                    ))}
-                </div>
-            </section>
-        </aside>
-    );
+      {accessToken && (
+        <>
+          <section className="mt-20">
+            <h3 className="mb-5 font-bold">관심정책</h3>
+            <ul className="space-y-4">
+              <li>policy 예시 예시</li>
+              <li>policy 예시 예시</li>
+              <li>policy 예시 예시</li>
+              <li>policy 예시 예시</li>
+            </ul>
+          </section>
+
+          <section className="mt-20">
+            <h3 className="mb-5 font-bold">이전 대화</h3>
+            <ul className="space-y-4">
+              <li>history 예시 예시</li>
+              <li>history 예시 예시</li>
+              <li>history 예시 예시</li>
+              <li>history 예시 예시</li>
+            </ul>
+          </section>
+        </>
+      )}
+    </aside>
+  );
 };
 
 export default Sidebar;

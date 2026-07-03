@@ -11,8 +11,8 @@ type Props = {
 }
 
 const LoginModal = ({ onClose }: Props) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("user1@user.com");
+  const [password, setPassword] = useState("user1234");
   const {setAccessToken} = useAuthStore();
 
   const handleLogin = async () => {
@@ -55,6 +55,7 @@ const LoginModal = ({ onClose }: Props) => {
               type="email"
               placeholder="이메일을 입력하세요"
               icon="@"
+              value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
             <Input
@@ -62,6 +63,7 @@ const LoginModal = ({ onClose }: Props) => {
               type="password"
               placeholder="비밀번호를 입력하세요"
               icon="="
+              value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
 
