@@ -5,6 +5,10 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [tailwindcss(),],
+  server: {
+    host: '10.1.205.103',
+    port: 5174
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src")
