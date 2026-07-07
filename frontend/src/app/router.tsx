@@ -5,6 +5,7 @@ import AuthLayout from "./layouts/AuthLayout";
 
 import HomePage from "@/pages/HomePage";
 import Signup from "@/pages/Signup";
+import ChatPage from "@/pages/ChatPage";
 
 
 export const router = createBrowserRouter([
@@ -16,6 +17,10 @@ export const router = createBrowserRouter([
                 index: true,
                 element: <HomePage />,
             },
+            {
+                path: "chat",
+                element: <ChatPage />,
+            }
         ],
     },
     {

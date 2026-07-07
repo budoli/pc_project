@@ -14,23 +14,20 @@ type Props = {
 const LoginModal = ({ onClose }: Props) => {
   const [email, setEmail] = useState("user1@user.com");
   const [password, setPassword] = useState("user1234");
-  const { setAccessToken, setUser } = useAuthStore();
+  const { setUser } = useAuthStore();
 
   const handleLogin = async () => {
-    const data = await login({
+    await login({
       email,
       password,
     });
 
-    setAccessToken(data.accessToken);
-
-    const user = await getCurrentUser(data.accessToken);
+    const user = await getCurrentUser();
 
     setUser(user);
 
     onClose();
-  }
-
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">

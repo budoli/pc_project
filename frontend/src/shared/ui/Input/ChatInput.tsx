@@ -1,12 +1,16 @@
 import { useState } from "react";
 
-const ChatInput = () => {
+interface ChatInputProps {
+    onSend: (message: string) => void;
+}
+
+const ChatInput = ({ onSend }: ChatInputProps) => {
     const [message, setMessage] = useState("");
 
     const handleSubmit = () => {
         if (!message.trim()) return;
 
-        console.log(message);
+        onSend(message);
         setMessage("");
     };
 

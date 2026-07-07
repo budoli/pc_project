@@ -1,6 +1,13 @@
 import ChatInput from "@/shared/ui/Input/ChatInput";
+import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
+    const navigate = useNavigate();
+
+    const handleSend = async (message: string) => {
+        navigate(`/chat?q=${encodeURIComponent(message)}`);
+    };
+
     return (
         <div className="flex h-full justify-center pt-56">
             <div className="w-full max-w-[650px]">
@@ -26,7 +33,7 @@ const HomePage = () => {
                     </p>
                 </div>
 
-                <ChatInput />
+                <ChatInput onSend={handleSend} />
             </div>
         </div>
     );
