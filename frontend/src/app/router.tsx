@@ -20,6 +20,10 @@ export const router = createBrowserRouter([
             {
                 path: "chat",
                 element: <ChatPage />,
+            },
+            {
+                path: "chat/:recommendationId",
+                element: <ChatPage />,
             }
         ],
     },

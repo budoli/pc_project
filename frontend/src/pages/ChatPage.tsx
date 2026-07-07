@@ -1,9 +1,10 @@
 import { requestRecommendation } from "@/features/recommendation/api/recommendationApi";
 import ChatInput from "@/shared/ui/Input/ChatInput";
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import ReactMarkdown from "react-markdown"
 import type { PolicyReference } from "@/features/recommendation/types";
+import { getRecommendationDetail } from "@/features/recommendation/api/getRecommendationDetail";
 
 interface ChatMessage {
     role: "user" | "assistant";
@@ -12,6 +13,7 @@ interface ChatMessage {
 }
 
 const ChatPage = () => {
+    const { recommendationId } = useParams();
     const [searchParams] = useSearchParams();
 
     const query = searchParams.get("q");
@@ -36,7 +38,7 @@ const ChatPage = () => {
 
             setMessages((prev) => [
                 ...prev,
-                { 
+                {
                     role: "assistant",
                     content: result.answer,
                     references: result.reference,
@@ -54,36 +56,59 @@ const ChatPage = () => {
         handleSend(query);
     }, [query]);
 
-    return (
-        <div className="flex h-full justify-center px-6 py-10">
-            <div className="flex h-full w-full max-w-[800px] flex-col">
-                <div className="flex-1 space-y-4 overflow-y-auto pb-6">
-                    {messages.map((message, index) => (
-                        <div
-                            key={index}
-                            className={
-                                message.role === "user"
-                                    ? "ml-auto max-w-[50%] rounded-2xl bg-gray-200 px-4 py-3 text-black"
-                                    : "mr-auto max-w-[70%] rounded-2xl bg-gray-100 px-4 py-3 text-gray-900"
-                            }
-                        >
-                            <ReactMarkdown>
-                                {message.content}
-                            </ReactMarkdown>
-                        </div>
-                    ))}
+    useEffect(() => {
+        if (!recommendationId) return;
 
-                    {loading && (
-                        <div className="mr-auto max-w-[70%] rounded-2xl bg-gray-100 px-4 py-3 text-gray-500">
-                            답변을 생성하고 있습니다...
-                        </div>
-                    )}
-                </div>
+        const fetchRecommendation = async () => {
+            const result = await getRecommendationDetail(
+                Number(recommendationId)
+            );
+            setMessages([
+                {
+                    role: "user",
+                    content: result.question,
+                },
+                {
+                    role: "assistant",
+                    content: result.answer,
+                    references: result.reference,
+                }
+            ])
+        };
 
-                <ChatInput onSend={handleSend} />
+        fetchRecommendation();
+    }, [recommendationId]);
+
+return (
+    <div className="flex h-full justify-center px-6 py-10">
+        <div className="flex h-full w-full max-w-[800px] flex-col">
+            <div className="flex-1 space-y-4 overflow-y-auto pb-6">
+                {messages.map((message, index) => (
+                    <div
+                        key={index}
+                        className={
+                            message.role === "user"
+                                ? "ml-auto max-w-[50%] rounded-2xl bg-gray-200 px-4 py-3 text-black"
+                                : "mr-auto max-w-[70%] rounded-2xl bg-gray-100 px-4 py-3 text-gray-900"
+                        }
+                    >
+                        <ReactMarkdown>
+                            {message.content}
+                        </ReactMarkdown>
+                    </div>
+                ))}
+
+                {loading && (
+                    <div className="mr-auto max-w-[70%] rounded-2xl bg-gray-100 px-4 py-3 text-gray-500">
+                        답변을 생성하고 있습니다...
+                    </div>
+                )}
             </div>
+
+            <ChatInput onSend={handleSend} />
         </div>
-    )
+    </div>
+)
 }
 
 export default ChatPage
