@@ -1,12 +1,14 @@
 import { requestRecommendation } from "@/features/recommendation/api/recommendationApi";
 import ChatInput from "@/shared/ui/Input/ChatInput";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-
+import ReactMarkdown from "react-markdown"
+import type { PolicyReference } from "@/features/recommendation/types";
 
 interface ChatMessage {
     role: "user" | "assistant";
-    content: string
+    content: string;
+    references?: PolicyReference[];
 }
 
 const ChatPage = () => {
@@ -16,6 +18,7 @@ const ChatPage = () => {
 
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [loading, setLoading] = useState(false);
+    const initializedRef = useRef(false);
 
     const handleSend = async (message: string) => {
         setMessages((prev) => [
@@ -33,7 +36,11 @@ const ChatPage = () => {
 
             setMessages((prev) => [
                 ...prev,
-                { role: "assistant", content: result.answer },
+                { 
+                    role: "assistant",
+                    content: result.answer,
+                    references: result.reference,
+                },
             ])
         } finally {
             setLoading(false);
@@ -41,10 +48,11 @@ const ChatPage = () => {
     };
 
     useEffect(() => {
-        if (query) {
-            handleSend(query);
-        }
-    }, []);
+        if (!query || initializedRef.current) return;
+
+        initializedRef.current = true;
+        handleSend(query);
+    }, [query]);
 
     return (
         <div className="flex h-full justify-center px-6 py-10">
@@ -55,11 +63,13 @@ const ChatPage = () => {
                             key={index}
                             className={
                                 message.role === "user"
-                                    ? "ml-auto max-w-[70%] rounded-2xl bg-black px-4 py-3 text-white"
+                                    ? "ml-auto max-w-[50%] rounded-2xl bg-gray-200 px-4 py-3 text-black"
                                     : "mr-auto max-w-[70%] rounded-2xl bg-gray-100 px-4 py-3 text-gray-900"
                             }
                         >
-                            {message.content}
+                            <ReactMarkdown>
+                                {message.content}
+                            </ReactMarkdown>
                         </div>
                     ))}
 

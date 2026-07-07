@@ -7,13 +7,14 @@ const Header = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const navigate = useNavigate();
 
-  const accessToken = useAuthStore((state) => state.accessToken);
+  const {user} = useAuthStore();
+  const isLogin = !!user;
 
   return (
     <>
       <header className="h-16 w-full px-8">
         <div className="flex h-full items-center justify-end">
-          {!accessToken && (
+          {!isLogin && (
             <div className="flex gap-3">
               <button
                 onClick={() => navigate("/signup")}
@@ -33,7 +34,7 @@ const Header = () => {
         </div>
       </header>
 
-      {isLoginOpen && !accessToken && (
+      {isLoginOpen && !isLogin && (
         <LoginModal onClose={() => setIsLoginOpen(false)} />
       )}
     </>

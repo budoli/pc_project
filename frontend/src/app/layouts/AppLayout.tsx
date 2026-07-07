@@ -1,8 +1,27 @@
 import Sidebar from "@/pages/Sidebar";
 import Header from "@/pages/Header";
 import { Outlet } from "react-router-dom";
+import { useAuthStore } from "@/features/auth/store/authStore";
+import { useEffect } from "react";
+import { getCurrentUser } from "@/features/user/api/getCurrentUser";
 
 const AppLayout = () => {
+  const { setUser, clearAuth } = useAuthStore();
+
+  useEffect(() => {
+    const restoreUser = async () => {
+      try {
+        const user = await getCurrentUser();
+        setUser(user);
+      } catch {
+        clearAuth();
+      }
+    };
+
+    restoreUser();
+
+  }, [setUser, clearAuth]);
+
   return (
     <div className="min-h-screen bg-[#f7f7fb]">
       <Sidebar />

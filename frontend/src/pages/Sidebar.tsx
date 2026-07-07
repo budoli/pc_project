@@ -3,7 +3,7 @@ import UserMenu from "@/features/auth/components/UserMenu";
 import { useAuthStore } from "@/features/auth/store/authStore";
 
 const Sidebar = () => {
-  const { accessToken, user, clearAuth } = useAuthStore();
+  const { user, clearAuth } = useAuthStore();
 
   return (
     <aside className="fixed left-0 top-0 flex h-screen w-[260px] flex-col bg-white px-6 py-6">
@@ -14,7 +14,7 @@ const Sidebar = () => {
       <nav className="space-y-5 text-[15px]">
         <button className="block">□ 새 채팅</button>
 
-        {accessToken && (
+        {user && (
           <>
             <button className="block">□ 북마크</button>
             <button className="block">□ 나중에 추가</button>
@@ -22,7 +22,7 @@ const Sidebar = () => {
         )}
       </nav>
 
-      {accessToken && (
+      {user && (
         <div className="mt-16 flex-1 overflow-y-auto">
           <section>
             <h3 className="mb-5 font-bold">관심정책</h3>
@@ -44,7 +44,7 @@ const Sidebar = () => {
         </div>
       )}
 
-      {accessToken && user && (
+      {user && (
         <div className="mt-auto border-t pt-4">
           <UserMenu
             name={user.name}
