@@ -12,7 +12,7 @@ qdrant_service = QdrantService()
 def startup():
   qdrant_service.create_collection_if_not_exists()
 
-@router.post("/policies")
+@router.post("/embeddings/policies")
 def embed_policy(request: PolicyEmbeddingRequest):
   text = f"""
   제목: {request.title}
@@ -81,7 +81,7 @@ def embed_policies_batch(request: PolicyEmbeddingBatchRequest) :
     "count" : saved_count
   }
 
-@router.post("/search")
+@router.post("/search/similar-policies")
 def search_policy(request: SearchRequest) :
   vector = embedding_service.embed(request.query)
   results = qdrant_service.search(vector, request.limit)

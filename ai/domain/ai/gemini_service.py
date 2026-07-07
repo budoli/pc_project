@@ -7,13 +7,6 @@ class GeminiService:
 
   def generate(self, prompt: str) -> str :
 
-    print("GEMINI_MODEL =", GEMINI_MODEL)
-    print("PROMPT VALUE =", repr(prompt))
-
-    if prompt is None or not str(prompt).strip():
-      raise ValueError("Gemini prompt is empty")
-
-
     response = self.client.models.generate_content(
       model=GEMINI_MODEL,
       contents=prompt
