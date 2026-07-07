@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 class PolicyEmbeddingRequest(BaseModel) :
-  policy_id:int
+  policyId:int
   title: str
   description: str
   organization: Optional[str] = None
