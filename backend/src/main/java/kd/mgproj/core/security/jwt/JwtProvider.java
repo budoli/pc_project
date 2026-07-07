@@ -78,7 +78,25 @@ public class JwtProvider {
     }
 
     public String resolveAccessToken(HttpServletRequest req) {
-        return resolveToken(req.getHeader(ACCESS_HEADER));
+        String bearerToken = resolveToken(req.getHeader(ACCESS_HEADER));
+
+        if (bearerToken != null) {
+            return bearerToken;
+        }
+
+        Cookie[] cookies = req.getCookies();
+
+        if (cookies == null) {
+            return null;
+        }
+
+        for (Cookie cookie : cookies) {
+            if ("refreshToken".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+
+        return null;
     }
 
     public String resolveRefreshToken(HttpServletRequest req) {
@@ -89,7 +107,7 @@ public class JwtProvider {
         }
 
         for (Cookie cookie : cookies) {
-            if ("refreshToken".equals(cookie.getName())) {
+            if ("accessToken".equals(cookie.getName())) {
                 return cookie.getValue();
             }
         }
