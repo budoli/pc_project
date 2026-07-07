@@ -39,7 +39,7 @@ public class EmbeddingService {
 
 
         restClient.post()
-                .uri(aiServerUrl + "/api/v1/embedding/policies")
+                .uri(aiServerUrl + "/api/v1/ai/embeddings/policies/batch")
                 .body(batchRequest)
                 .retrieve()
                 .toBodilessEntity();
@@ -49,7 +49,7 @@ public class EmbeddingService {
         EmbeddingSearchRequest request = new EmbeddingSearchRequest(query, limit);
 
         return restClient.post()
-                .uri(aiServerUrl + "/api/v1/embeddings/search")
+                .uri(aiServerUrl + "/api/v1/ai/search")
                 .body(request)
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {}

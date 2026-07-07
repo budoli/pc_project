@@ -1,6 +1,7 @@
 package kd.mgproj.domain.policy.service;
 
 import jakarta.transaction.Transactional;
+import kd.mgproj.domain.embedding.service.EmbeddingService;
 import kd.mgproj.domain.policy.client.YouthPolicyApiClient;
 import kd.mgproj.domain.policy.dto.YouthPolicyItem;
 import kd.mgproj.domain.policy.dto.response.YouthPolicyApiResponse;
@@ -11,21 +12,22 @@ import kd.mgproj.domain.policy.repository.PolicyConditionsRepository;
 import kd.mgproj.domain.policy.repository.PolicyDocumentsRepository;
 import kd.mgproj.domain.policy.repository.PolicyRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class PolicySyncServiceImpl implements PolicySyncService {
 
+    private final ObjectMapper objectMapper;
     private final YouthPolicyApiClient apiClient;
     private final PolicyRepository policyRepository;
-    private final PolicyConditionsRepository policyConditionsRepository;
+    private final EmbeddingService embeddingService;
     private final PolicyDocumentsRepository policyDocumentsRepository;
-    private final ObjectMapper objectMapper;
+    private final PolicyConditionsRepository policyConditionsRepository;
 
     @Override
     @Transactional
@@ -33,6 +35,8 @@ public class PolicySyncServiceImpl implements PolicySyncService {
         int pageNum = 1;
         int pageSize = 100;
         int syncedCount = 0;
+
+        List<PoliciesEntity> savedPolicies = new ArrayList<>();
 
         while (true) {
             YouthPolicyApiResponse response =
@@ -56,6 +60,7 @@ public class PolicySyncServiceImpl implements PolicySyncService {
                 syncCondition(savedPolicy, item);
                 syncDocument(savedPolicy, item);
 
+                savedPolicies.add(savedPolicy);
                 syncedCount++;
             }
 
@@ -65,7 +70,13 @@ public class PolicySyncServiceImpl implements PolicySyncService {
 
 
             pageNum++;
+
+            if (pageNum >= 1) {
+                break;
+            }
         }
+
+        embeddingService.embedPolicies(savedPolicies);
 
         return syncedCount;
     }

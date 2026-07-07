@@ -1,12 +1,14 @@
-fastapi==0.116.1
-uvicorn[standard]==0.35.0
+fastapi
+uvicorn[standard]
 
-sentence-transformers==5.0.0
-torch==2.7.1
+sentence-transformers
+torch
 
-qdrant-client==1.15.1
+qdrant-client
 
-python-dotenv==1.1.1
-pydantic==2.11.7
+python-dotenv
+pydantic
 
-httpx==0.28.1
+httpx
+
+google-genai
