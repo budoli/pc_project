@@ -1,10 +1,5 @@
-export const logout = async (): Promise<void> => {
-  const response = await fetch("http://localhost:8080/api/v1/auth/logout", {
-    method: "POST",
-    credentials: "include",
-  });
+import { api } from "@/shared/api/axios";
 
-  if (!response.ok) {
-    throw new Error("로그아웃 실패");
-  }
+export const logout = async (): Promise<void> => {
+  await api.post("/api/v1/auth/logout");
 }

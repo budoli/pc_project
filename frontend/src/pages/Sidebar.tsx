@@ -1,24 +1,36 @@
 import { Logo } from "@/assets";
+import { logout } from "@/features/auth/api/logout";
 import UserMenu from "@/features/auth/components/UserMenu";
 import { useAuthStore } from "@/features/auth/store/authStore";
-import { getRecommendationHistory } from "@/features/recommendation/api/getRecommendationHistory";
-import type { RecommendationHistory } from "@/features/recommendation/types/RecommendationHistory ";
+import { getConversations } from "@/features/chat/api/chatApi";
+import type { ConversationResponse } from "@/features/chat/types/ConversationResponse";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
   const { user, clearAuth } = useAuthStore();
-  const [history, setHistory] = useState<RecommendationHistory[]>([]);
+  const [conversations, setConversations] = useState<ConversationResponse[]>([]);
   const navigate = useNavigate();
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      clearAuth();
+      navigate("/");
+    }
+  };
+
   useEffect(() => {
-    const fetchHistory = async () => {
-      const result = await getRecommendationHistory();
-      setHistory(result);
+    if (!user) return;
+
+    const fetchConversations = async () => {
+      const result = await getConversations();
+      setConversations(result);
     };
 
-    fetchHistory();
-  }, []);
+    fetchConversations();
+  }, [user]);
 
   return (
     <aside className="fixed left-0 top-0 flex h-screen w-[260px] flex-col bg-white px-6 py-6">
@@ -63,12 +75,12 @@ const Sidebar = () => {
           <section className="mt-16">
             <h3 className="mb-5 font-bold">이전 대화</h3>
             <ul className="space-y-1">
-              {history.map((item) => (
-                <li key={item.recommendationId}>
-                  <button onClick={() => navigate(`/chat/${item.recommendationId}`)}
+              {conversations.map((conversation) => (
+                <li key={conversation.conversationId}>
+                  <button onClick={() => navigate(`/chat/${conversation.conversationId}`)}
                     className="w-full truncate rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
                   >
-                    {item.question}
+                    {conversation.title}
                   </button>
                 </li>
               ))}
@@ -82,7 +94,7 @@ const Sidebar = () => {
           <UserMenu
             name={user.name}
             role={user.role}
-            onLogout={clearAuth}
+            onLogout={handleLogout}
           />
         </div>
       )}

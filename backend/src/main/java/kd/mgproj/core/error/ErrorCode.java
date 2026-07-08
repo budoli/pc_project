@@ -55,8 +55,12 @@ public enum ErrorCode {
     // Email 인증
     EMAIL_CODE_EXPIRED(400, "EMAIL-400", "인증번호가 만료되었습니다."),
     EMAIL_CODE_MISMATCH(400, "EMAIL-401", "인증번호가 일치하지 않습니다."),
-    EMAIL_NOT_VERIFIED(400, "EMAIL-402", "인증이 완료되지 않았습니다.");
+    EMAIL_NOT_VERIFIED(400, "EMAIL-402", "인증이 완료되지 않았습니다."),
 
+    //ai 관련
+    INTERNAL_SERVER_ERROR(400, "100", "오류"),
+    CONVERSATION_NOT_FOUND(400, "300", "오류"),
+    AI_RESPONSE_FAILED(400, "AI-400", "오류");
 
     private final int status;
     private final String errorCode;
