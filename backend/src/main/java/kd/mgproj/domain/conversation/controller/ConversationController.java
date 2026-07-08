@@ -1,5 +1,6 @@
 package kd.mgproj.domain.conversation.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import kd.mgproj.core.security.UserDetailsImpl;
 import kd.mgproj.domain.conversation.dto.request.CreateConversationRequest;
 import kd.mgproj.domain.conversation.dto.request.SendMessageRequest;
@@ -20,6 +21,7 @@ import java.util.List;
 public class ConversationController {
     private final ConversationService conversationService;
 
+    @Operation(summary = "채팅 API/대화 생성")
     @PostMapping
     public ResponseEntity<ConversationResponse> createConversation(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -30,6 +32,7 @@ public class ConversationController {
         );
     }
 
+    @Operation(summary = "채팅 API/대화 목록 조회")
     @GetMapping
     public ResponseEntity<List<ConversationResponse>> getConversations(
             @AuthenticationPrincipal UserDetailsImpl userDetails
@@ -39,6 +42,7 @@ public class ConversationController {
         );
     }
 
+    @Operation(summary = "채팅 API/대화 메시지 목록 조회")
     @GetMapping("/{conversationId}/messages")
     public ResponseEntity<List<MessageResponse>> getMessages(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -47,6 +51,7 @@ public class ConversationController {
         return ResponseEntity.ok(conversationService.getMessages(userDetails.getUserId(), conversationId));
     }
 
+    @Operation(summary = "채팅 API/메시지 전송")
     @PostMapping("/{conversationId}/messages")
     public ResponseEntity<SendMessageResponse> sendMessage(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
