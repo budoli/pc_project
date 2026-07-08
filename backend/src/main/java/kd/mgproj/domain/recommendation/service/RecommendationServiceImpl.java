@@ -2,6 +2,8 @@ package kd.mgproj.domain.recommendation.service;
 
 import kd.mgproj.core.error.ErrorCode;
 import kd.mgproj.core.error.exception.BusinessException;
+import kd.mgproj.domain.conversation.dto.request.AiConversationRequest;
+import kd.mgproj.domain.conversation.entity.MessageEntity;
 import kd.mgproj.domain.policy.entity.PoliciesEntity;
 import kd.mgproj.domain.policy.repository.PolicyRepository;
 import kd.mgproj.domain.recommendation.dto.request.RecommendationRequest;
@@ -104,5 +106,39 @@ public class RecommendationServiceImpl implements RecommendationService {
                 recommendation,
                 policies
         );
+    }
+
+    @Override
+    public AiChatResponse chatWithHistory(
+            Long userId,
+            String message,
+            List<MessageEntity> recentMessages
+    ) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        List<AiConversationRequest.AiMessage> messages = recentMessages.stream()
+                .map(chatMessage -> new AiConversationRequest.AiMessage(
+                        chatMessage.getRole().name(),
+                        chatMessage.getContent()
+                ))
+                .toList();
+
+        AiConversationRequest aiRequest = new AiConversationRequest(
+                message,
+                messages
+        );
+
+        AiChatResponse aiResponse = restClient.post()
+                .uri(aiServerUrl + "/api/v1/ai/chat")
+                .body(aiRequest)
+                .retrieve()
+                .body(AiChatResponse.class);
+
+        if (aiResponse == null) {
+            throw new BusinessException(ErrorCode.AI_RESPONSE_FAILED);
+        }
+
+        return aiResponse;
     }
 }

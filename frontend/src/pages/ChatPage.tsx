@@ -1,10 +1,10 @@
-import { requestRecommendation } from "@/features/recommendation/api/recommendationApi";
 import ChatInput from "@/shared/ui/Input/ChatInput";
 import { useEffect, useRef, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import ReactMarkdown from "react-markdown"
 import type { PolicyReference } from "@/features/recommendation/types";
-import { getRecommendationDetail } from "@/features/recommendation/api/getRecommendationDetail";
+import type { ChatMessageResponse } from "@/features/chat/types/ChatMessageResponse";
+import { createConversation, getConversationMessages, sendConversationMessage } from "@/features/chat/api/chatApi";
 
 interface ChatMessage {
     role: "user" | "assistant";
@@ -12,9 +12,16 @@ interface ChatMessage {
     references?: PolicyReference[];
 }
 
+const toChatMessage = (message: ChatMessageResponse): ChatMessage => ({
+    role: message.role === "USER" ? "user" : "assistant",
+    content: message.content,
+    references: message.references,
+});
+
 const ChatPage = () => {
-    const { recommendationId } = useParams();
+    const { conversationId } = useParams();
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
 
     const query = searchParams.get("q");
 
@@ -22,32 +29,69 @@ const ChatPage = () => {
     const [loading, setLoading] = useState(false);
     const initializedRef = useRef(false);
 
-    const handleSend = async (message: string) => {
-        setMessages((prev) => [
-            ...prev,
-            {
-                role: "user",
-                content: message
-            },
-        ]);
+    const currentConversationId = conversationId
+        ? Number(conversationId)
+        : null;
 
+    const handleSend = async (message: string) => {
+        const optimisticUserMessage: ChatMessage = {
+            role: "user",
+            content: message,
+        };
+
+        setMessages((prev) => [...prev, optimisticUserMessage]);
         setLoading(true);
 
         try {
-            const result = await requestRecommendation(message);
+            let activeConversationId = currentConversationId;
 
+            if (!activeConversationId) {
+                const conversation = await createConversation(message);
+                activeConversationId = conversation.conversationId;
+
+                navigate(`/chat/${activeConversationId}`, {
+                    replace: true,
+                });
+            }
+
+            const result = await sendConversationMessage(
+                activeConversationId,
+                message
+            );
+
+            setMessages((prev) => [
+                ...prev,
+                toChatMessage(result.assistantMessage),
+            ]);
+        } catch (error) {
             setMessages((prev) => [
                 ...prev,
                 {
                     role: "assistant",
-                    content: result.answer,
-                    references: result.reference,
+                    content: "답변을 생성하지 못했습니다. 잠시 후 다시 시도해주세요.",
                 },
-            ])
+            ]);
         } finally {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (!currentConversationId) return;
+
+        const fetchMessages = async () => {
+            setLoading(true);
+
+            try {
+                const result = await getConversationMessages(currentConversationId);
+                setMessages(result.map(toChatMessage));
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchMessages();
+    }, [currentConversationId]);
 
     useEffect(() => {
         if (!query || initializedRef.current) return;
@@ -56,59 +100,37 @@ const ChatPage = () => {
         handleSend(query);
     }, [query]);
 
-    useEffect(() => {
-        if (!recommendationId) return;
 
-        const fetchRecommendation = async () => {
-            const result = await getRecommendationDetail(
-                Number(recommendationId)
-            );
-            setMessages([
-                {
-                    role: "user",
-                    content: result.question,
-                },
-                {
-                    role: "assistant",
-                    content: result.answer,
-                    references: result.reference,
-                }
-            ])
-        };
+    return (
+        <div className="flex h-full justify-center px-6 py-10">
+            <div className="flex h-full w-full max-w-[800px] flex-col">
+                <div className="flex-1 space-y-4 overflow-y-auto pb-6">
+                    {messages.map((message, index) => (
+                        <div
+                            key={index}
+                            className={
+                                message.role === "user"
+                                    ? "ml-auto max-w-[50%] rounded-2xl bg-gray-400 px-4 py-3 text-black"
+                                    : "mr-auto max-w-[70%] rounded-2xl bg-gray-100 px-4 py-3 text-gray-900"
+                            }
+                        >
+                            <ReactMarkdown>
+                                {message.content}
+                            </ReactMarkdown>
+                        </div>
+                    ))}
 
-        fetchRecommendation();
-    }, [recommendationId]);
+                    {loading && (
+                        <div className="mr-auto max-w-[70%] rounded-2xl bg-gray-100 px-4 py-3 text-gray-500">
+                            답변을 생성하고 있습니다...
+                        </div>
+                    )}
+                </div>
 
-return (
-    <div className="flex h-full justify-center px-6 py-10">
-        <div className="flex h-full w-full max-w-[800px] flex-col">
-            <div className="flex-1 space-y-4 overflow-y-auto pb-6">
-                {messages.map((message, index) => (
-                    <div
-                        key={index}
-                        className={
-                            message.role === "user"
-                                ? "ml-auto max-w-[50%] rounded-2xl bg-gray-200 px-4 py-3 text-black"
-                                : "mr-auto max-w-[70%] rounded-2xl bg-gray-100 px-4 py-3 text-gray-900"
-                        }
-                    >
-                        <ReactMarkdown>
-                            {message.content}
-                        </ReactMarkdown>
-                    </div>
-                ))}
-
-                {loading && (
-                    <div className="mr-auto max-w-[70%] rounded-2xl bg-gray-100 px-4 py-3 text-gray-500">
-                        답변을 생성하고 있습니다...
-                    </div>
-                )}
+                <ChatInput onSend={handleSend} />
             </div>
-
-            <ChatInput onSend={handleSend} />
         </div>
-    </div>
-)
+    )
 }
 
 export default ChatPage
