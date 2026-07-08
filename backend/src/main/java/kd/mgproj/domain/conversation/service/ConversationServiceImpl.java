@@ -110,7 +110,7 @@ public class ConversationServiceImpl implements ConversationService{
         try {
             referencesJson = objectMapper.writeValueAsString(aiResponse.references());
         } catch (JsonProcessingException e) {
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
+            throw new BusinessException(ErrorCode.INTER_SERVER_ERROR);
         }
 
         MessageEntity assistantMessage = messageRepository.save(
