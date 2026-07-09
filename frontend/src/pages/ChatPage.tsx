@@ -1,10 +1,10 @@
 import ChatInput from "@/shared/ui/Input/ChatInput";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import ReactMarkdown from "react-markdown"
 import type { PolicyReference } from "@/features/recommendation/types";
 import type { ChatMessageResponse } from "@/features/chat/types/ChatMessageResponse";
 import { createConversation, getConversationMessages, sendConversationMessage } from "@/features/chat/api/chatApi";
+import ChatMessageItem from "@/features/chat/components/ChatMessageItem";
 
 interface ChatMessage {
     role: "user" | "assistant";
@@ -48,16 +48,18 @@ const ChatPage = () => {
             if (!activeConversationId) {
                 const conversation = await createConversation(message);
                 activeConversationId = conversation.conversationId;
-
-                navigate(`/chat/${activeConversationId}`, {
-                    replace: true,
-                });
             }
 
             const result = await sendConversationMessage(
                 activeConversationId,
                 message
             );
+
+            if (!currentConversationId) {
+                navigate(`/chat/${activeConversationId}`, {
+                    replace: true,
+                });
+            }
 
             setMessages((prev) => [
                 ...prev,
@@ -100,24 +102,26 @@ const ChatPage = () => {
         handleSend(query);
     }, [query]);
 
-
     return (
         <div className="flex h-full justify-center px-6 py-10">
             <div className="flex h-full w-full max-w-[800px] flex-col">
                 <div className="flex-1 space-y-4 overflow-y-auto pb-6">
                     {messages.map((message, index) => (
-                        <div
+                        <ChatMessageItem
                             key={index}
-                            className={
-                                message.role === "user"
-                                    ? "ml-auto max-w-[50%] rounded-2xl bg-gray-400 px-4 py-3 text-black"
-                                    : "mr-auto max-w-[70%] rounded-2xl bg-gray-100 px-4 py-3 text-gray-900"
-                            }
-                        >
-                            <ReactMarkdown>
-                                {message.content}
-                            </ReactMarkdown>
-                        </div>
+                            message={{
+                                id: String(index),
+                                role: message.role,
+                                content: message.content,
+                                policies: message.references?.map((ref) => ({
+                                    id: ref.policyId,
+                                    title: ref.title,
+                                    description: null,
+                                    organization: null,
+                                    category: null,
+                                })),
+                            }}
+                        />
                     ))}
 
                     {loading && (

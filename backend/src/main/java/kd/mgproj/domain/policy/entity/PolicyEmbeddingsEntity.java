@@ -2,9 +2,13 @@ package kd.mgproj.domain.policy.entity;
 
 import jakarta.persistence.*;
 import kd.mgproj.common.entity.BaseEntity;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.w3c.dom.Text;
 
 @Entity
+@Getter @NoArgsConstructor @AllArgsConstructor
 @Table(name = "policy_embeddings")
 public class PolicyEmbeddingsEntity extends BaseEntity {
 
