@@ -1,6 +1,7 @@
 package kd.mgproj.domain.conversation.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kd.mgproj.common.enums.MessageRole;
 import kd.mgproj.core.error.ErrorCode;
@@ -69,7 +70,7 @@ public class ConversationServiceImpl implements ConversationService{
 
         return messageRepository.findByConversationIdOrderByIdAsc(conversation.getId())
                 .stream()
-                .map(MessageResponse::from)
+                .map(this::toMessageResponse)
                 .toList();
     }
 
@@ -124,10 +125,32 @@ public class ConversationServiceImpl implements ConversationService{
         conversation.updateLastMessage(aiResponse.answer());
         conversation.updateTitleIfEmpty(request.message());
 
-        return new SendMessageResponse(
-                MessageResponse.from(userMessage),
-                MessageResponse.from(assistantMessage, aiResponse.references())
+        return SendMessageResponse.of(
+                userMessage,
+                assistantMessage,
+                aiResponse.references()
         );
+    }
+
+    private MessageResponse toMessageResponse(MessageEntity message) {
+        String referencesJson = message.getReferencesJson();
+
+        if (referencesJson == null || referencesJson.isBlank()) {
+            return MessageResponse.from(message);
+        }
+
+        try {
+            List<AiChatResponse.PolicyReferenceDto> references =
+                    objectMapper.readValue(
+                            referencesJson,
+                            new TypeReference<>() {
+                            }
+                    );
+
+            return MessageResponse.from(message, references);
+        }catch (JsonProcessingException e) {
+            return MessageResponse.from(message);
+        }
     }
 
     private ConversationEntity getConversation(Long conversationId, Long userId) {

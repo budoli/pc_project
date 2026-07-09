@@ -8,4 +8,6 @@ import java.util.Optional;
 
 public interface PolicyConditionsRepository extends JpaRepository<PolicyConditionsEntity, Long> {
     Optional<PolicyConditionsEntity> findByPolicy(PoliciesEntity policy);
+
+    Optional<PolicyConditionsEntity> findByPolicyId(Long policyId);
 }
