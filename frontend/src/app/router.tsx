@@ -6,6 +6,7 @@ import AuthLayout from "./layouts/AuthLayout";
 import HomePage from "@/pages/HomePage";
 import Signup from "@/pages/Signup";
 import ChatPage from "@/pages/ChatPage";
+import SignupProfilePage from "@/pages/SignupProfile";
 
 
 export const router = createBrowserRouter([
@@ -34,6 +35,10 @@ export const router = createBrowserRouter([
                 path: "signup",
                 element: <Signup />,
             },
+            {
+                path: "signup/profile",
+                element: <SignupProfilePage />
+            }
         ],
     },
 
