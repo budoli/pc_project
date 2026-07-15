@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ChatMessage } from "../types/ChatMessage";
 import ChatPolicyCard from "./ChatPolicyCard";
-import PolicyDetailModal from "@/features/policy/componenets/PolicyDetailModal";
+import PolicyDetailModal from "@/features/policy/components/PolicyDetailModal";
 import ReactMarkdown from "react-markdown"
 
 type Props = {
@@ -18,7 +18,7 @@ export default function ChatMessageItem({ message }: Props) {
       <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
         <div className="max-w-[82%] space-y-3">
           <div
-            className={`rounded-2xl px-4 py-3 text-sm leading-6 ${isUser
+            className={`sm rounded-2xl px-4 py-3 leading-6 ${isUser
                 ? "bg-gray-600 text-white"
                 : "bg-gray-100 text-gray-800"
               }`}

@@ -1,3 +1,3 @@
-export interface recommendationRequest  {
+export interface RecommendationRequest {
   query: string;
 }

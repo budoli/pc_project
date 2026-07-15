@@ -15,7 +15,7 @@ const HomePage = () => {
                     어떤 청년 지원 정책을 찾고 계신가요?
                 </h1>
 
-                <div className="mb-10 space-y-2 text-sm text-gray-500">
+                <div className="sm mb-10 space-y-2 text-gray-500">
                     <p>
                         지금 청년이 받을 수 있는 지원금은
                         무엇인가요?

@@ -1,4 +1,4 @@
-import PolicyDetailModal from "@/features/policy/componenets/PolicyDetailModal";
+import PolicyDetailModal from "@/features/policy/components/PolicyDetailModal";
 import { useState } from "react";
 
 type PolicySummary = {

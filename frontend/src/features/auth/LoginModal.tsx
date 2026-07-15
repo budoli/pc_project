@@ -45,14 +45,14 @@ const LoginModal = ({ onClose }: Props) => {
               <img src={Logo} alt="로고" className="h-24 w-24"></img>
             </div>
             <div className="mt-8 flex flex-col items-center text-center">
-              <div className="lg font-semib old">로그인하여 맞춤 정책을 확인하세요</div>
-              <p className="base font-regular text-gray-500">AI가 나에게 맞는 청년 지원 정책을 추천해드립니다.</p>
+              <div className="lg font-semibold">로그인하여 맞춤 정책을 확인하세요</div>
+              <p className="base text-gray-500">AI가 나에게 맞는 청년 지원 정책을 추천해드립니다.</p>
             </div>
           </div>
         </div>
 
         <div className="flex w-1/2 items-center justify-center px-8">
-          <div className="flex w-full w-max-[300px] flex-col gap-3">
+          <div className="flex w-full max-w-[300px] flex-col gap-3">
             <Input
               label="이메일"
               type="email"
@@ -79,7 +79,7 @@ const LoginModal = ({ onClose }: Props) => {
             </div>
             <Button variant="google">Google로 계속하기</Button>
             <Button variant="kakao">카카오로 시작하기</Button>
-            <div className="mt-1 text-center sm text-gray-500">
+            <div className="sm mt-1 text-center text-gray-500">
               계정이 없으신가요? {" "}
               <Link
                 to="/signup"

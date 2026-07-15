@@ -22,10 +22,10 @@ const Button = ({
 
     const sizes = {
         sm: "h-8 w-auto px-3 rounded-lg text-xs",
-        md: "h-10 w-auto px-4 rounded-lg text-sm",
-        lg: "h-12 w-full px-4 rounded-lg text-sm",
-        input: "h-full px-6 rounded-none border-l border-gray-300 text-sm",
-        menu: "h-11 w-full justify-start rounded-md px-3 text-sm",
+        md: "sm h-10 w-auto px-4 rounded-lg",
+        lg: "sm h-12 w-full px-4 rounded-lg",
+        input: "sm h-full px-6 rounded-none border-l border-gray-300",
+        menu: "sm h-11 w-full justify-start rounded-md px-3",
     };
 
     return (
