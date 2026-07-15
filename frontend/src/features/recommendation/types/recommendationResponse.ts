@@ -4,7 +4,7 @@ export interface PolicyReference {
     score: number;
 }
 
-export interface recommendationResponse {
+export interface RecommendationResponse {
     recommendationId: number;
     answer: string;
     reference: PolicyReference[];

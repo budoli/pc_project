@@ -30,7 +30,7 @@ const UserMenu = ({ name, role, onLogout }: UserMenuProps) => {
                 <div className="absolute bottom-16 left-0 w-full rounded-xl border border-gray-200 bg-white p-2 shadow-xl">
                     <div className="border-b px-3 py-3">
                         <p className="font-semibold">{name}</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="sm text-gray-500">
                             {role === "ADMIN" ? "관리자" : "일반 사용자"}
                         </p>
                     </div>
@@ -41,7 +41,7 @@ const UserMenu = ({ name, role, onLogout }: UserMenuProps) => {
                                 navigate("/admin");
                                 setOpen(false);
                             }}
-                            className="mt-2 w-full rounded-lg px-3 py-3 text-left text-sm hover:bg-gray-100"
+                            className="sm mt-2 w-full rounded-lg px-3 py-3 text-left hover:bg-gray-100"
                         >
                             관리자 페이지
                         </button>
@@ -52,7 +52,7 @@ const UserMenu = ({ name, role, onLogout }: UserMenuProps) => {
                             navigate("/mypage");
                             setOpen(false);
                         }}
-                        className="w-full rounded-lg px-3 py-3 text-left text-sm hover:bg-gray-100"
+                        className="sm w-full rounded-lg px-3 py-3 text-left hover:bg-gray-100"
                     >
                         내 정보
                     </button>
@@ -62,7 +62,7 @@ const UserMenu = ({ name, role, onLogout }: UserMenuProps) => {
                             onLogout();
                             setOpen(false);
                         }}
-                        className="w-full rounded-lg px-3 py-3 text-left text-sm text-red-500 hover:bg-red-50"
+                        className="sm w-full rounded-lg px-3 py-3 text-left text-red-500 hover:bg-red-50"
                     >
                         로그아웃
                     </button>

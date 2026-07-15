@@ -3,6 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { Button, DateInput, Select } from "@/shared/ui";
 import { signup } from "@/features/auth/api/signup";
 import { useSignupStore } from "@/features/auth/store/signupStore";
+import {
+  GENDER_OPTIONS,
+  HOUSEHOLD_TYPE_OPTIONS,
+  INCOME_LEVEL_OPTIONS,
+  INTEREST_OPTIONS,
+  JOB_STATUS_OPTIONS,
+} from "@/features/auth/constants/signupOptions";
+import { REGION_OPTIONS } from "@/shared/constants/regions";
 
 const SignupProfilePage = () => {
   const signupForm = useSignupStore((state) => state.signupForm);
@@ -61,34 +69,12 @@ const SignupProfilePage = () => {
     }
   };
 
-  const interests = ["취업", "주거", "창업", "교육", "복지", "금융"];
-  const regions = [
-    { label: "선택", value: "" },
-    { label: "서울특별시", value: "11" },
-    { label: "부산광역시", value: "26" },
-    { label: "대구광역시", value: "27" },
-    { label: "인천광역시", value: "28" },
-    { label: "광주광역시", value: "29" },
-    { label: "대전광역시", value: "30" },
-    { label: "울산광역시", value: "31" },
-    { label: "세종특별자치시", value: "36" },
-    { label: "경기도", value: "41" },
-    { label: "강원특별자치도", value: "51" },
-    { label: "충청북도", value: "43" },
-    { label: "충청남도", value: "44" },
-    { label: "전북특별자치도", value: "52" },
-    { label: "전라남도", value: "46" },
-    { label: "경상북도", value: "47" },
-    { label: "경상남도", value: "48" },
-    { label: "제주특별자치도", value: "50" },
-  ];
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-10">
       <div className="w-full max-w-xl rounded-2xl bg-white p-8 shadow-sm">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold">추가 정보 입력</h1>
-          <p className="mt-2 text-sm text-gray-500">
+          <h1 className="xl2">추가 정보 입력</h1>
+          <p className="sm mt-2 text-gray-500">
             더 정확한 정책 추천을 위해 정보를 입력해주세요.
           </p>
         </div>
@@ -104,69 +90,41 @@ const SignupProfilePage = () => {
             label="성별"
             value={form.gender}
             onChange={(e) => handleChange("gender", e.target.value)}
-            options={[
-              { label: "선택", value: "" },
-              { label: "남성", value: "M" },
-              { label: "여성", value: "F" },
-            ]}
+            options={GENDER_OPTIONS}
           />
 
           <Select
             label="지역"
             value={form.region}
             onChange={(e) => handleChange("region", e.target.value)}
-            options={regions}
+            options={REGION_OPTIONS}
           />
 
           <Select
             label="직업상태"
             value={form.jobStatus}
             onChange={(e) => handleChange("jobStatus", e.target.value)}
-            options={[
-              { label: "선택", value: "" },
-              { label: "학생", value: "STUDENT" },
-              { label: "취업준비생", value: "JOB_SEEKER" },
-              { label: "직장인", value: "EMPLOYED" },
-              { label: "자영업자", value: "SELF_EMPLOYED" },
-              { label: "프리랜서", value: "FREELANCER" },
-              { label: "미취업", value: "UNEMPLOYED" },
-              { label: "퇴직", value: "RETIRED" },
-              { label: "기타", value: "ETC" },
-            ]}
+            options={JOB_STATUS_OPTIONS}
           />
 
           <Select
             label="소득"
             value={form.incomeLevel}
             onChange={(e) => handleChange("incomeLevel", e.target.value)}
-            options={[
-              { label: "선택", value: "" },
-              { label: "저소득", value: "LOW" },
-              { label: "중간", value: "MIDDLE" },
-              { label: "고소득", value: "HIGH" },
-              { label: "모름", value: "UNKNOWN" },
-            ]}
+            options={INCOME_LEVEL_OPTIONS}
           />
 
           <Select
             label="거주"
             value={form.householdType}
             onChange={(e) => handleChange("householdType", e.target.value)}
-            options={[
-              { label: "선택", value: "" },
-              { label: "1인가구", value: "SINGLE" },
-              { label: "부부", value: "COUPLE " },
-              { label: "자녀 있는 가구", value: "FAMILY_WITH_CHILDREN"},
-              { label: "한부모 가구", value: "SINGLE_PARENT " },
-              { label: "다인 가구", value: "MULTI_CHILD" },
-              { label: "기타", value: "ETC" },
-            ]}
+            options={HOUSEHOLD_TYPE_OPTIONS}
           />
 
           <div>
-            <p className="mb-2 text-sm font-medium text-gray-700">관심 분야</p>
+            <p className="sm mb-2 font-medium text-gray-700">관심 분야</p>
             <div className="flex flex-wrap gap-2">
-              {interests.map((interest) => {
+              {INTEREST_OPTIONS.map((interest) => {
                 const selected = form.interests.includes(interest);
 
                 return (
@@ -174,7 +132,7 @@ const SignupProfilePage = () => {
                     key={interest}
                     type="button"
                     onClick={() => toggleInterest(interest)}
-                    className={`rounded-full border px-4 py-2 text-sm ${
+                    className={`sm rounded-full border px-4 py-2 ${
                       selected
                         ? "border-black bg-black text-white"
                         : "border-gray-300 bg-white text-gray-700"
@@ -194,7 +152,7 @@ const SignupProfilePage = () => {
           <button
             type="button"
             onClick={() => navigate("/")}
-            className="w-full text-sm text-gray-500 hover:text-black"
+            className="sm w-full text-gray-500 hover:text-black"
           >
             나중에 입력하기
           </button>

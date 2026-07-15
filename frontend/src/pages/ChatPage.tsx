@@ -1,22 +1,10 @@
 import ChatInput from "@/shared/ui/Input/ChatInput";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import type { PolicyReference } from "@/features/recommendation/types";
-import type { ChatMessageResponse } from "@/features/chat/types/ChatMessageResponse";
 import { createConversation, getConversationMessages, sendConversationMessage } from "@/features/chat/api/chatApi";
 import ChatMessageItem from "@/features/chat/components/ChatMessageItem";
-
-interface ChatMessage {
-    role: "user" | "assistant";
-    content: string;
-    references?: PolicyReference[];
-}
-
-const toChatMessage = (message: ChatMessageResponse): ChatMessage => ({
-    role: message.role === "USER" ? "user" : "assistant",
-    content: message.content,
-    references: message.references,
-});
+import type { ChatMessage } from "@/features/chat/types/ChatMessage";
+import { toChatMessage } from "@/features/chat/lib/chatMapper";
 
 const ChatPage = () => {
     const { conversationId } = useParams();
@@ -35,6 +23,7 @@ const ChatPage = () => {
 
     const handleSend = async (message: string) => {
         const optimisticUserMessage: ChatMessage = {
+            id: `user-${Date.now()}`,
             role: "user",
             content: message,
         };
@@ -69,6 +58,7 @@ const ChatPage = () => {
             setMessages((prev) => [
                 ...prev,
                 {
+                    id: `assistant-error-${Date.now()}`,
                     role: "assistant",
                     content: "답변을 생성하지 못했습니다. 잠시 후 다시 시도해주세요.",
                 },
@@ -106,21 +96,10 @@ const ChatPage = () => {
         <div className="flex h-full justify-center px-6 py-10">
             <div className="flex h-full w-full max-w-[800px] flex-col">
                 <div className="flex-1 space-y-4 overflow-y-auto pb-6">
-                    {messages.map((message, index) => (
+                    {messages.map((message) => (
                         <ChatMessageItem
-                            key={index}
-                            message={{
-                                id: String(index),
-                                role: message.role,
-                                content: message.content,
-                                policies: message.references?.map((ref) => ({
-                                    id: ref.policyId,
-                                    title: ref.title,
-                                    description: null,
-                                    organization: null,
-                                    category: null,
-                                })),
-                            }}
+                            key={message.id}
+                            message={message}
                         />
                     ))}
 

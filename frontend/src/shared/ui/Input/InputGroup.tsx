@@ -15,7 +15,7 @@ const InputGroup = ({
 }: InputGroupProps) => {
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
-      <label className="text-sm text-gray-500">
+      <label className="sm text-gray-500">
         {label}
       </label>
 
@@ -28,7 +28,7 @@ const InputGroup = ({
           )}
 
           <input
-            className="w-full border-none bg-transparent text-sm outline-none placeholder:text-gray-400"
+            className="sm w-full border-none bg-transparent outline-none placeholder:text-gray-400"
             {...props}
           />
         </div>
@@ -40,7 +40,7 @@ const InputGroup = ({
         )}
       </div>
       {helperText && (
-        <div className="xs text-gray-500">
+        <div className="sm text-gray-500">
       {helperText}
         </div>
       )}

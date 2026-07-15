@@ -7,7 +7,7 @@ const Header = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const navigate = useNavigate();
 
-  const {user} = useAuthStore();
+  const { user } = useAuthStore();
   const isLogin = !!user;
 
   return (

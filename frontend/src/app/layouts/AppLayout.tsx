@@ -1,5 +1,5 @@
-import Sidebar from "@/pages/Sidebar";
-import Header from "@/pages/Header";
+import Sidebar from "./components/Sidebar";
+import Header from "./components/Header";
 import { Outlet } from "react-router-dom";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { useEffect } from "react";

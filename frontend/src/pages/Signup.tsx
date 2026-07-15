@@ -116,11 +116,11 @@ const SignupPage = () => {
                 <div className="mb-8 flex flex-col items-center text-center">
                     <img src={Logo} alt="로고" className="mb-4 h-20 w-20" />
 
-                    <h1 className="text-2xl font-bold leading-[140%] tracking-[-0.025em]">
+                    <h1 className="xl2">
                         회원가입
                     </h1>
 
-                    <p className="mt-3 text-sm leading-[140%] tracking-[-0.025em] text-gray-500">
+                    <p className="sm mt-3 text-gray-500">
                         정확한 정보를 입력하시면 더 정확한 추천이 가능합니다.
                     </p>
                 </div>
@@ -221,7 +221,7 @@ const SignupPage = () => {
                     <div className="h-px flex-1 bg-gray-300" />
                 </div>
 
-                <div className="text-center sm text-gray-500">
+                <div className="sm text-center text-gray-500">
                     이미 계정이 있으신가요?{" "}
                     <Link
                         to="/"

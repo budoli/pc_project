@@ -18,12 +18,12 @@ export default function ChatPolicyCard({ policy, onClick }: Props) {
         </span>
       </div>
 
-      <h3 className="text-sm font-semibold leading-5 text-gray-900">
+      <h3 className="sm font-semibold leading-5 text-gray-900">
         {policy.title}
       </h3>
 
       {policy.description && (
-        <p className="mt-2 line-clamp-2 text-sm leading-5 text-gray-600">
+        <p className="sm mt-2 line-clamp-2 leading-5 text-gray-600">
           {policy.description}
         </p>
       )}
