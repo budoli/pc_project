@@ -1,13 +1,13 @@
 from fastapi import APIRouter
 from .schemas import ChatRequest, ChatResponse
-from .chat_service import ChatService
+from domain.dependencies import get_chat_service
 
 router = APIRouter()
 
-chat_service = ChatService()
-
 @router.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest) :
+    chat_service = get_chat_service()
+
     return chat_service.chat(
         query=request.query,
         limit=request.limit,

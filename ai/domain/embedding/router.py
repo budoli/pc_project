@@ -1,37 +1,22 @@
 from fastapi import APIRouter
 from .schemas import PolicyEmbeddingRequest, PolicyEmbeddingBatchRequest, SearchRequest
-from .embedding_service import EmbeddingService
-from .qdrant_service import QdrantService
+from .mappers import build_policy_embedding_text, build_policy_payload, map_qdrant_result_to_policy
+from domain.dependencies import get_embedding_service, get_qdrant_service
 
 router = APIRouter()
 
-embedding_service = EmbeddingService()
-qdrant_service = QdrantService()
-
 @router.on_event("startup")
 def startup():
+  qdrant_service = get_qdrant_service()
   qdrant_service.create_collection_if_not_exists()
 
 @router.post("/embeddings/policies")
 def embed_policy(request: PolicyEmbeddingRequest):
-  text = f"""
-  제목: {request.title}
-  설명: {request.description}
-  기관: {request.organization}
-  지역: {request.region}
-  분야: {request.category}
-  """
+  embedding_service = get_embedding_service()
+  qdrant_service = get_qdrant_service()
 
-  vector = embedding_service.embed(text)
-
-  payload = {
-    "policyId": request.policyId,
-    "title": request.title,
-    "description": request.description,
-    "organization": request.organization,
-    "region": request.region,
-    "category": request.category
-  }
+  vector = embedding_service.embed(build_policy_embedding_text(request))
+  payload = build_policy_payload(request)
 
   qdrant_service.upsert_policy(
     point_id=request.policyId,
@@ -46,27 +31,13 @@ def embed_policy(request: PolicyEmbeddingRequest):
 
 @router.post("/embeddings/policies/batch")
 def embed_policies_batch(request: PolicyEmbeddingBatchRequest) :
+  embedding_service = get_embedding_service()
+  qdrant_service = get_qdrant_service()
   saved_count = 0
 
   for policy in request.policies:
-    text = f"""
-    제목: {policy.title}
-    설명: {policy.description}
-    기관: {policy.organization}
-    지역: {policy.region}
-    분야: {policy.category}
-    """
-
-    vector = embedding_service.embed(text)
-
-    payload = {
-      "policyId" : policy.policyId,
-      "title" : policy.title,
-      "description" : policy.description,
-      "organization" : policy.organization,
-      "region" : policy.region,
-      "category" : policy.category,
-    }
+    vector = embedding_service.embed(build_policy_embedding_text(policy))
+    payload = build_policy_payload(policy)
 
     qdrant_service.upsert_policy(
       point_id=policy.policyId,
@@ -83,18 +54,10 @@ def embed_policies_batch(request: PolicyEmbeddingBatchRequest) :
 
 @router.post("/search/similar-policies")
 def search_policy(request: SearchRequest) :
+  embedding_service = get_embedding_service()
+  qdrant_service = get_qdrant_service()
+
   vector = embedding_service.embed(request.query)
   results = qdrant_service.search(vector, request.limit)
 
-  return [
-    {
-      "score": result.score,
-      "policyId": result.payload.get("policyId"),
-      "title": result.payload.get("title"),
-      "description": result.payload.get("description"),
-      "organization": result.payload.get("organization"),
-      "region": result.payload.get("region"),
-      "category": result.payload.get("category"),
-    }
-    for result in results
-  ]
+  return [map_qdrant_result_to_policy(result) for result in results]

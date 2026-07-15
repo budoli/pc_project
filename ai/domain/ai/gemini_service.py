@@ -1,5 +1,5 @@
 from google import genai
-from database import GEMINI_API_KEY, GEMINI_MODEL
+from core.config import GEMINI_API_KEY, GEMINI_MODEL
 
 class GeminiService:
   def __init__(self):

@@ -1,14 +1,12 @@
-from domain.ai.gemini_service import GeminiService
 from domain.ai.prompt import build_policy_prompt
-from domain.embedding.embedding_service import EmbeddingService
-from domain.embedding.qdrant_service import QdrantService
+from domain.embedding.mappers import map_qdrant_result_to_policy
 
 
 class ChatService:
-    def __init__(self):
-        self.embedding_service = EmbeddingService()
-        self.qdrant_service = QdrantService()
-        self.gemini_service = GeminiService()
+    def __init__(self, embedding_service, qdrant_service, gemini_service):
+        self.embedding_service = embedding_service
+        self.qdrant_service = qdrant_service
+        self.gemini_service = gemini_service
 
     def chat(self, query: str, limit: int = 5, profile=None, messages=None) -> dict:
         search_query = self._build_search_query(query, profile)
@@ -17,18 +15,7 @@ class ChatService:
         results = self.qdrant_service.search(vector, max(limit * 20, 100))
         results = self._filter_by_region_code(results, profile)[:limit]
 
-        policies = [
-            {
-                "score": result.score,
-                "policyId": result.payload.get("policyId"),
-                "title": result.payload.get("title"),
-                "description": result.payload.get("description"),
-                "organization": result.payload.get("organization"),
-                "region": result.payload.get("region"),
-                "category": result.payload.get("category"),
-            }
-            for result in results
-        ]
+        policies = [map_qdrant_result_to_policy(result) for result in results]
 
         prompt = build_policy_prompt(query, policies, profile=profile, messages=messages or [])
         answer = self.gemini_service.generate(prompt)

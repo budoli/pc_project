@@ -1,6 +1,6 @@
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
-from database import QDRANT_HOST, QDRANT_PORT
+from core.config import QDRANT_HOST, QDRANT_PORT
 
 COLLECTION_NAME = "policy_embeddings"
 
