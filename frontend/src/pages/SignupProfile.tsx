@@ -62,6 +62,26 @@ const SignupProfilePage = () => {
   };
 
   const interests = ["취업", "주거", "창업", "교육", "복지", "금융"];
+  const regions = [
+    { label: "선택", value: "" },
+    { label: "서울특별시", value: "11" },
+    { label: "부산광역시", value: "26" },
+    { label: "대구광역시", value: "27" },
+    { label: "인천광역시", value: "28" },
+    { label: "광주광역시", value: "29" },
+    { label: "대전광역시", value: "30" },
+    { label: "울산광역시", value: "31" },
+    { label: "세종특별자치시", value: "36" },
+    { label: "경기도", value: "41" },
+    { label: "강원특별자치도", value: "51" },
+    { label: "충청북도", value: "43" },
+    { label: "충청남도", value: "44" },
+    { label: "전북특별자치도", value: "52" },
+    { label: "전라남도", value: "46" },
+    { label: "경상북도", value: "47" },
+    { label: "경상남도", value: "48" },
+    { label: "제주특별자치도", value: "50" },
+  ];
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-10">
@@ -95,14 +115,7 @@ const SignupProfilePage = () => {
             label="지역"
             value={form.region}
             onChange={(e) => handleChange("region", e.target.value)}
-            options={[
-              { label: "선택", value: "" },
-              { label: "서울", value: "서울" },
-              { label: "경기", value: "경기" },
-              { label: "부산", value: "부산" },
-              { label: "대구", value: "대구" },
-              { label: "인천", value: "인천" },
-            ]}
+            options={regions}
           />
 
           <Select

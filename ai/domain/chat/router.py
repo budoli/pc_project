@@ -10,5 +10,7 @@ chat_service = ChatService()
 def chat(request: ChatRequest) :
     return chat_service.chat(
         query=request.query,
-        limit=request.limit
+        limit=request.limit,
+        profile=request.profile,
+        messages=request.messages
     )

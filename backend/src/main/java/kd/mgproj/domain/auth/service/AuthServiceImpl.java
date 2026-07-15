@@ -1,6 +1,7 @@
 package kd.mgproj.domain.auth.service;
 
 import kd.mgproj.common.enums.Role;
+import kd.mgproj.common.enums.RegionCode;
 import kd.mgproj.core.error.ErrorCode;
 import kd.mgproj.core.error.exception.BusinessException;
 import kd.mgproj.core.security.jwt.JwtProvider;
@@ -48,7 +49,7 @@ public class AuthServiceImpl implements AuthService {
                 user,
                 dto.birthDate(),
                 dto.gender(),
-                dto.region(),
+                RegionCode.codeOf(dto.region()),
                 dto.jobStatus(),
                 dto.incomeLevel(),
                 dto.householdType(),

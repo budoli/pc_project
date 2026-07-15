@@ -4,8 +4,9 @@ import kd.mgproj.core.error.ErrorCode;
 import kd.mgproj.core.error.exception.BusinessException;
 import kd.mgproj.domain.conversation.dto.request.AiConversationRequest;
 import kd.mgproj.domain.conversation.entity.MessageEntity;
-import kd.mgproj.domain.policy.entity.PoliciesEntity;
 import kd.mgproj.domain.policy.repository.PolicyRepository;
+import kd.mgproj.domain.profile.entity.UsersProfileEntity;
+import kd.mgproj.domain.profile.repository.UserProfileRepository;
 import kd.mgproj.domain.recommendation.dto.request.RecommendationRequest;
 import kd.mgproj.domain.recommendation.dto.response.AiChatResponse;
 import kd.mgproj.domain.recommendation.dto.response.RecommendationDetailResponse;
@@ -19,17 +20,20 @@ import kd.mgproj.domain.user.entity.UsersEntity;
 import kd.mgproj.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestClient;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 public class RecommendationServiceImpl implements RecommendationService {
-    private final RestClient restClient;
+    private final WebClient webClient;
     private final UserRepository userRepository;
+    private final UserProfileRepository profileRepository;
     private final PolicyRepository policyRepository;
     private final RecommendationRepository recommendationRepository;
     private final RecommendationPolicyRepository recommendationPolicyRepository;
@@ -42,11 +46,28 @@ public class RecommendationServiceImpl implements RecommendationService {
         UsersEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        AiChatResponse aiResponse = restClient.post()
+        UsersProfileEntity profile = profileRepository.findByUsersId(userId)
+                .orElse(null);
+
+        AiConversationRequest aiRequest = new AiConversationRequest(
+                request.query(),
+                AiConversationRequest.UserProfilePayload.from(profile),
+                List.of()
+        );
+
+
+        AiChatResponse aiResponse = webClient.post()
                 .uri(aiServerUrl + "/api/v1/ai/chat")
-                .body(request)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(aiRequest)
                 .retrieve()
-                .body(AiChatResponse.class);
+                .bodyToMono(AiChatResponse.class)
+                .block();
+
+        if (aiResponse == null) {
+            throw new BusinessException(ErrorCode.AI_RESPONSE_FAILED);
+        }
 
         RecommendationEntity recommendation = RecommendationEntity.create(
                 user,
@@ -57,26 +78,23 @@ public class RecommendationServiceImpl implements RecommendationService {
         RecommendationEntity savedRecommend =
                 recommendationRepository.save(recommendation);
 
-        List<RecommendationPolicyEntity> recommendationPolicy =
+        List<RecommendationPolicyEntity> recommendationPolicies =
                 aiResponse.references().stream()
                         .filter(reference -> reference.policyId() != null)
-                        .map(reference -> {
-                            PoliciesEntity policy = policyRepository.findById(reference.policyId())
-                                    .orElseThrow();
-
-                            return RecommendationPolicyEntity.create(
-                                    savedRecommend,
-                                    policy,
-                                    reference.score()
-                            );
-                        })
+                        .map(reference -> policyRepository.findById(reference.policyId())
+                                .map(policy -> RecommendationPolicyEntity.create(
+                                        savedRecommend,
+                                        policy,
+                                        reference.score()
+                                ))
+                                .orElse(null)
+                        )
+                        .filter(Objects::nonNull)
                         .toList();
 
-        recommendationPolicyRepository.saveAll(recommendationPolicy);
+        recommendationPolicyRepository.saveAll(recommendationPolicies);
 
-        return new
-
-                RecommendationResponse(
+        return new RecommendationResponse(
                 savedRecommend.getId(),
                 savedRecommend.getAnswer(),
                 aiResponse.references()
@@ -117,6 +135,9 @@ public class RecommendationServiceImpl implements RecommendationService {
         userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
+        UsersProfileEntity profile = profileRepository.findByUsersId(userId)
+                .orElse(null);
+
         List<AiConversationRequest.AiMessage> messages = recentMessages.stream()
                 .map(chatMessage -> new AiConversationRequest.AiMessage(
                         chatMessage.getRole().name(),
@@ -126,19 +147,17 @@ public class RecommendationServiceImpl implements RecommendationService {
 
         AiConversationRequest aiRequest = new AiConversationRequest(
                 message,
+                AiConversationRequest.UserProfilePayload.from(profile),
                 messages
         );
 
-        AiChatResponse aiResponse = restClient.post()
+        return webClient.post()
                 .uri(aiServerUrl + "/api/v1/ai/chat")
-                .body(aiRequest)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(aiRequest)
                 .retrieve()
-                .body(AiChatResponse.class);
-
-        if (aiResponse == null) {
-            throw new BusinessException(ErrorCode.AI_RESPONSE_FAILED);
-        }
-
-        return aiResponse;
+                .bodyToMono(AiChatResponse.class)
+                .block();
     }
 }

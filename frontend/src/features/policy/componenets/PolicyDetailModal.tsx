@@ -90,7 +90,7 @@ const PolicyDetailModal = ({ policyId, onClose }: Porps) => {
                                 value={`${policy.applyStartDate || "-"} ~ ${policy.applyEndDate || "-"
                                     }`}
                             />
-                            <InfoRow label="지역" value={policy.region} />
+                            <InfoRow label="지역" value={formatRegion(policy.region)} />
                         </section>
 
                         {policy.condition && (
@@ -170,6 +170,51 @@ function InfoRow({
             <dd className="break-words text-gray-800">{value || "-"}</dd>
         </div>
     );
+}
+
+const REGION_LABELS: Record<string, string> = {
+    "00": "전국",
+    "11": "서울특별시",
+    "12": "전남광주통합특별시",
+    "21": "부산직할시",
+    "22": "대구직할시",
+    "23": "인천직할시",
+    "24": "광주직할시",
+    "25": "대전직할시",
+    "26": "부산광역시",
+    "27": "대구광역시",
+    "28": "인천광역시",
+    "29": "광주광역시",
+    "30": "대전광역시",
+    "31": "울산광역시",
+    "36": "세종특별자치시",
+    "41": "경기도",
+    "42": "강원도",
+    "43": "충청북도",
+    "44": "충청남도",
+    "45": "전라북도",
+    "46": "전라남도",
+    "47": "경상북도",
+    "48": "경상남도",
+    "49": "제주도",
+    "50": "제주특별자치도",
+    "51": "강원특별자치도",
+    "52": "전북특별자치도",
+};
+
+function formatRegion(region?: string | null) {
+    if (!region) {
+        return "-";
+    }
+
+    const labels = region
+        .replaceAll("|", ",")
+        .split(/[,\s]+/)
+        .map((code) => code.trim().slice(0, 2))
+        .filter(Boolean)
+        .map((code) => REGION_LABELS[code] ?? code);
+
+    return [...new Set(labels)].join(", ") || region;
 }
 
 export default PolicyDetailModal
