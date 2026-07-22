@@ -1,6 +1,11 @@
 package kd.mgproj.domain.conversation.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import kd.mgproj.common.entity.BaseEntity;
 import kd.mgproj.domain.user.entity.UsersEntity;
 import lombok.AccessLevel;
@@ -13,41 +18,41 @@ import lombok.NoArgsConstructor;
 @Table(name = "conversations")
 public class ConversationEntity extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UsersEntity user;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false)
+	private UsersEntity user;
 
-    @Column(nullable = false)
-    private String title;
+	@Column(nullable = false)
+	private String title;
 
-    @Column(columnDefinition = "TEXT")
-    private String lastMessage;
+	@Column(columnDefinition = "TEXT")
+	private String lastMessage;
 
-    public static ConversationEntity create(UsersEntity user, String firstMessage) {
-        ConversationEntity conversation = new ConversationEntity();
-        conversation.user = user;
-        conversation.title = makeTitle(firstMessage);
-        conversation.lastMessage = firstMessage;
-        return conversation;
-    }
+	public static ConversationEntity create(UsersEntity user, String firstMessage) {
+		ConversationEntity conversation = new ConversationEntity();
+		conversation.user = user;
+		conversation.title = makeTitle(firstMessage);
+		conversation.lastMessage = firstMessage;
+		return conversation;
+	}
 
-    public void updateLastMessage(String lastMessage) {
-        this.lastMessage = lastMessage;
-    }
+	private static String makeTitle(String message) {
+		if (message == null || message.isBlank()) {
+			return "새 대화";
+		}
 
-    public void updateTitleIfEmpty(String message) {
-        if (this.title == null || this.title.isBlank() || this.title.equals("새 대화")) {
-            this.title = makeTitle(message);
-        }
-    }
+		return message.length() > 30
+			? message.substring(0, 30)
+			: message;
+	}
 
-    private static String makeTitle(String message) {
-        if (message == null || message.isBlank()) {
-            return "새 대화";
-        }
+	public void updateLastMessage(String lastMessage) {
+		this.lastMessage = lastMessage;
+	}
 
-        return message.length() > 30
-                ? message.substring(0, 30)
-                : message;
-    }
+	public void updateTitleIfEmpty(String message) {
+		if (this.title == null || this.title.isBlank() || this.title.equals("새 대화")) {
+			this.title = makeTitle(message);
+		}
+	}
 }

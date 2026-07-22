@@ -1,5 +1,10 @@
 package kd.mgproj.domain.policy.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import jakarta.transaction.Transactional;
 import kd.mgproj.domain.embedding.service.EmbeddingService;
 import kd.mgproj.domain.policy.client.YouthPolicyApiClient;
@@ -12,100 +17,95 @@ import kd.mgproj.domain.policy.repository.PolicyConditionsRepository;
 import kd.mgproj.domain.policy.repository.PolicyDocumentsRepository;
 import kd.mgproj.domain.policy.repository.PolicyRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class PolicySyncServiceImpl implements PolicySyncService {
 
-    private final ObjectMapper objectMapper;
-    private final YouthPolicyApiClient apiClient;
-    private final PolicyRepository policyRepository;
-    private final EmbeddingService embeddingService;
-    private final PolicyDocumentsRepository policyDocumentsRepository;
-    private final PolicyConditionsRepository policyConditionsRepository;
+	private final ObjectMapper objectMapper;
+	private final YouthPolicyApiClient apiClient;
+	private final PolicyRepository policyRepository;
+	private final EmbeddingService embeddingService;
+	private final PolicyDocumentsRepository policyDocumentsRepository;
+	private final PolicyConditionsRepository policyConditionsRepository;
 
-    @Override
-    @Transactional
-    public int syncPolicies() {
-        int pageNum = 1;
-        int pageSize = 100;
-        int syncedCount = 0;
+	@Override
+	@Transactional
+	public int syncPolicies() {
+		int pageNum = 1;
+		int pageSize = 100;
+		int syncedCount = 0;
 
-        List<PoliciesEntity> savedPolicies = new ArrayList<>();
+		List<PoliciesEntity> savedPolicies = new ArrayList<>();
 
-        while (true) {
-            YouthPolicyApiResponse response =
-                    apiClient.fetchPolicies(pageNum, pageSize);
+		while (true) {
+			YouthPolicyApiResponse response =
+				apiClient.fetchPolicies(pageNum, pageSize);
 
-            List<YouthPolicyItem> items = response.result().youthPolicyList();
+			List<YouthPolicyItem> items = response.result().youthPolicyList();
 
-            if (items == null || items.isEmpty()) {
-                break;
-            }
+			if (items == null || items.isEmpty()) {
+				break;
+			}
 
-            for (YouthPolicyItem item : items) {
-                String rawData = toJson(item);
+			for (YouthPolicyItem item : items) {
+				String rawData = toJson(item);
 
-                PoliciesEntity policy = policyRepository.findByExternalId(item.plcyNo())
-                        .map(existing -> existing.updateFromYouthPolicy(item, rawData))
-                        .orElseGet(() -> PoliciesEntity.fromYouthPolicy(item, rawData));
+				PoliciesEntity policy = policyRepository.findByExternalId(item.plcyNo())
+					.map(existing -> existing.updateFromYouthPolicy(item, rawData))
+					.orElseGet(() -> PoliciesEntity.fromYouthPolicy(item, rawData));
 
-                PoliciesEntity savedPolicy = policyRepository.save(policy);
+				PoliciesEntity savedPolicy = policyRepository.save(policy);
 
-                syncCondition(savedPolicy, item);
-                syncDocument(savedPolicy, item);
+				syncCondition(savedPolicy, item);
+				syncDocument(savedPolicy, item);
 
-                savedPolicies.add(savedPolicy);
-                syncedCount++;
-            }
+				savedPolicies.add(savedPolicy);
+				syncedCount++;
+			}
 
-            if (items.size() < pageSize) {
-                break;
-            }
+			if (items.size() < pageSize) {
+				break;
+			}
 
+			pageNum++;
 
-            pageNum++;
+			if (pageNum >= 1) {
+				break;
+			}
+		}
 
-            if (pageNum >= 1) {
-                break;
-            }
-        }
+		embeddingService.embedPolicies(savedPolicies);
 
-        embeddingService.embedPolicies(savedPolicies);
+		return syncedCount;
+	}
 
-        return syncedCount;
-    }
+	private void syncCondition(
+		PoliciesEntity policy,
+		YouthPolicyItem item
+	) {
+		PolicyConditionsEntity condition = policyConditionsRepository.findByPolicy(policy)
+			.orElseGet(() -> PolicyConditionsEntity.from(policy, item));
 
-    private void syncCondition(
-            PoliciesEntity policy,
-            YouthPolicyItem item
-    ) {
-        PolicyConditionsEntity condition = policyConditionsRepository.findByPolicy(policy)
-                .orElseGet(() -> PolicyConditionsEntity.from(policy, item));
+		condition.updateFrom(item);
 
-        condition.updateFrom(item);
+		policyConditionsRepository.save(condition);
+	}
 
-        policyConditionsRepository.save(condition);
-    }
+	private void syncDocument(
+		PoliciesEntity policy,
+		YouthPolicyItem item
+	) {
+		PolicyDocumentsEntity document = policyDocumentsRepository.findByPolicy(policy)
+			.orElseGet(() -> PolicyDocumentsEntity.from(policy, item));
 
-    private void syncDocument(
-            PoliciesEntity policy,
-            YouthPolicyItem item
-    ) {
-        PolicyDocumentsEntity document = policyDocumentsRepository.findByPolicy(policy)
-                .orElseGet(() -> PolicyDocumentsEntity.from(policy, item));
+		document.updateFrom(item);
 
-        document.updateFrom(item);
+		policyDocumentsRepository.save(document);
+	}
 
-        policyDocumentsRepository.save(document);
-    }
-
-    private String toJson(YouthPolicyItem item) {
-        return objectMapper.writeValueAsString(item);
-    }
+	private String toJson(YouthPolicyItem item) {
+		return objectMapper.writeValueAsString(item);
+	}
 }

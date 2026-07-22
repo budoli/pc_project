@@ -1,44 +1,44 @@
 package kd.mgproj.domain.policy.dto;
 
 public record YouthPolicyItem(
-        String plcyNo,
-        String plcyNm,
-        String plcyKywdNm,
-        String plcyExplnCn,
+	String plcyNo,
+	String plcyNm,
+	String plcyKywdNm,
+	String plcyExplnCn,
 
-        String lclsfNm,
-        String mclsfNm,
+	String lclsfNm,
+	String mclsfNm,
 
-        String plcySprtCn,
+	String plcySprtCn,
 
-        String sprvsnInstCdNm,
-        String operInstCdNm,
+	String sprvsnInstCdNm,
+	String operInstCdNm,
 
-        String bizPrdBgngYmd,
-        String bizPrdEndYmd,
-        String bizPrdEtcCn,
+	String bizPrdBgngYmd,
+	String bizPrdEndYmd,
+	String bizPrdEtcCn,
 
-        String aplyYmd,
-        String plcyAplyMthdCn,
-        String srngMthdCn,
-        String aplyUrlAddr,
-        String sbmsnDcmntCn,
-        String etcMttrCn,
-        String refUrlAddr1,
-        String refUrlAddr2,
+	String aplyYmd,
+	String plcyAplyMthdCn,
+	String srngMthdCn,
+	String aplyUrlAddr,
+	String sbmsnDcmntCn,
+	String etcMttrCn,
+	String refUrlAddr1,
+	String refUrlAddr2,
 
-        String sprtTrgtMinAge,
-        String sprtTrgtMaxAge,
-        String zipCd,
+	String sprtTrgtMinAge,
+	String sprtTrgtMaxAge,
+	String zipCd,
 
-        String earnEtcCn,
-        String addAplyQlfcCndCn,
-        String ptcpPrpTrgtCn,
+	String earnEtcCn,
+	String addAplyQlfcCndCn,
+	String ptcpPrpTrgtCn,
 
-        String jobCd,
-        String schoolCd,
+	String jobCd,
+	String schoolCd,
 
-        String frstRegDt,
-        String lastMdfcnDt
+	String frstRegDt,
+	String lastMdfcnDt
 ) {
 }

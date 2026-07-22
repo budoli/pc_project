@@ -18,25 +18,25 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Table(name = "users")
 public class UsersEntity extends BaseEntity {
-  private String name;
+	private String name;
 
-  private String email;
+	private String email;
 
-  private String password;
+	private String password;
 
-  @Enumerated(EnumType.STRING)
-  private Role role;
+	@Enumerated(EnumType.STRING)
+	private Role role;
 
-  public static UsersEntity createUser(
-          String name,
-          String email,
-          String password
-  ) {
-    return UsersEntity.builder()
-            .name(name)
-            .email(email)
-            .password(password)
-            .role(Role.USER)
-            .build();
-  }
+	public static UsersEntity createUser(
+		String name,
+		String email,
+		String password
+	) {
+		return UsersEntity.builder()
+			.name(name)
+			.email(email)
+			.password(password)
+			.role(Role.USER)
+			.build();
+	}
 }

@@ -1,24 +1,29 @@
 package kd.mgproj.common.entity;
 
-import jakarta.persistence.*;
-import lombok.Getter;
+import java.time.LocalDateTime;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
+import jakarta.persistence.Column;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
+import lombok.Getter;
 
 @Getter
 @MappedSuperclass
 public abstract class BaseEntity {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-  @Column(updatable = false)
-  @CreationTimestamp
-  private LocalDateTime createdAt;
+	@Column(updatable = false)
+	@CreationTimestamp
+	private LocalDateTime createdAt;
 
-  @Column(updatable = true)
-  @UpdateTimestamp
-  private LocalDateTime updatedAt;
+	@Column(updatable = true)
+	@UpdateTimestamp
+	private LocalDateTime updatedAt;
 }
