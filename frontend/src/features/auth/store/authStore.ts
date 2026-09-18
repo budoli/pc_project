@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { type User } from "@/features/user/types/User";
+import { type User } from "@/features/user/types/user";
 
 type AuthState = {
     user: User | null;
