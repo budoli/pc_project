@@ -13,7 +13,6 @@ public class SecurityWhiteList {
 		"/api/v1/auth/login",
 		"/api/v1/auth/reissue",
 		"/api/v1/auth/email/send",
-		"/api/v1/auth/email/verify",
-		"/api/v1/admin/policies/sync"
+		"/api/v1/auth/email/verify"
 	};
 }
