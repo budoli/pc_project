@@ -69,6 +69,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 			throw new BusinessException(ErrorCode.AI_RESPONSE_FAILED);
 		}
 
+		List<AiChatResponse.PolicyReferenceDto> validReferences =
+			filterExistingPolicyReferences(aiResponse.references());
+
 		RecommendationEntity recommendation = RecommendationEntity.create(
 			user,
 			request.query(),
@@ -79,7 +82,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			recommendationRepository.save(recommendation);
 
 		List<RecommendationPolicyEntity> recommendationPolicies =
-			aiResponse.references().stream()
+			validReferences.stream()
 				.filter(reference -> reference.policyId() != null)
 				.map(reference -> policyRepository.findById(reference.policyId())
 					.map(policy -> RecommendationPolicyEntity.create(
@@ -97,7 +100,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 		return new RecommendationResponse(
 			savedRecommend.getId(),
 			savedRecommend.getAnswer(),
-			aiResponse.references()
+			validReferences
 		);
 	}
 
@@ -151,7 +154,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			messages
 		);
 
-		return webClient.post()
+		AiChatResponse aiResponse = webClient.post()
 			.uri(aiServerUrl + "/api/v1/ai/chat")
 			.contentType(MediaType.APPLICATION_JSON)
 			.accept(MediaType.APPLICATION_JSON)
@@ -159,5 +162,35 @@ public class RecommendationServiceImpl implements RecommendationService {
 			.retrieve()
 			.bodyToMono(AiChatResponse.class)
 			.block();
+
+		if (aiResponse == null) {
+			throw new BusinessException(ErrorCode.AI_RESPONSE_FAILED);
+		}
+
+		return new AiChatResponse(
+			aiResponse.answer(),
+			filterExistingPolicyReferences(aiResponse.references())
+		);
+	}
+
+	private List<AiChatResponse.PolicyReferenceDto> filterExistingPolicyReferences(
+		List<AiChatResponse.PolicyReferenceDto> references
+	) {
+		if (references == null) {
+			return List.of();
+		}
+
+		return references.stream()
+			.filter(reference -> reference.policyId() != null)
+			.map(reference -> policyRepository.findById(reference.policyId())
+				.filter(policy -> Objects.equals(policy.getTitle(), reference.title()))
+				.map(policy -> new AiChatResponse.PolicyReferenceDto(
+					policy.getId(),
+					policy.getTitle(),
+					reference.score()
+				))
+				.orElse(null))
+			.filter(Objects::nonNull)
+			.toList();
 	}
 }
