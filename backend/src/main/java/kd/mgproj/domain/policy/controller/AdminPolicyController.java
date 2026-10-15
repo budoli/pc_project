@@ -20,4 +20,10 @@ public class AdminPolicyController {
 		return ResponseEntity.ok(count);
 	}
 
+	@PostMapping("/reindex")
+	public ResponseEntity<Integer> reindexPolicies() {
+		int count = policySyncService.reindexPolicies();
+		return ResponseEntity.ok(count);
+	}
+
 }

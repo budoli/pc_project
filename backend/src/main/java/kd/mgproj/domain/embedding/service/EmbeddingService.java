@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class EmbeddingService {
+	private static final int EMBEDDING_BATCH_SIZE = 25;
 
 	private final RestClient restClient;
 
@@ -24,7 +25,11 @@ public class EmbeddingService {
 	private String aiServerUrl;
 
 	public void embedPolicies(List<PoliciesEntity> policies) {
-		List<EmbeddingPolicyRequest> request = policies.stream()
+		embedPolicies(policies, true);
+	}
+
+	public void embedPolicies(List<PoliciesEntity> policies, boolean replaceExisting) {
+		List<EmbeddingPolicyRequest> requests = policies.stream()
 			.map(policy -> new EmbeddingPolicyRequest(
 				policy.getId(),
 				policy.getTitle(),
@@ -35,21 +40,25 @@ public class EmbeddingService {
 			))
 			.toList();
 
-		EmbeddingPolicyBatchRequest batchRequest =
-			new EmbeddingPolicyBatchRequest(request);
+		for (int start = 0; start < requests.size(); start += EMBEDDING_BATCH_SIZE) {
+			int end = Math.min(start + EMBEDDING_BATCH_SIZE, requests.size());
+			EmbeddingPolicyBatchRequest batchRequest =
+				new EmbeddingPolicyBatchRequest(requests.subList(start, end));
 
-		restClient.post()
-			.uri(aiServerUrl + "/api/v1/ai/embeddings/policies/batch")
-			.body(batchRequest)
-			.retrieve()
-			.toBodilessEntity();
+			restClient.post()
+				.uri(aiServerUrl + "/api/v1/ai/embeddings/policies/batch?replace="
+					+ (replaceExisting && start == 0))
+				.body(batchRequest)
+				.retrieve()
+				.toBodilessEntity();
+		}
 	}
 
 	public List<EmbeddingSearchResponse> searchPolicies(String query, int limit) {
 		EmbeddingSearchRequest request = new EmbeddingSearchRequest(query, limit);
 
 		return restClient.post()
-			.uri(aiServerUrl + "/api/v1/ai/search")
+			.uri(aiServerUrl + "/api/v1/ai/search/similar-policies")
 			.body(request)
 			.retrieve()
 			.body(new ParameterizedTypeReference<>() {

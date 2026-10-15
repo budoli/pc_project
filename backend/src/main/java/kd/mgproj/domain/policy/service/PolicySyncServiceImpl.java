@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 
 import jakarta.transaction.Transactional;
 import kd.mgproj.domain.embedding.service.EmbeddingService;
@@ -17,10 +18,12 @@ import kd.mgproj.domain.policy.repository.PolicyConditionsRepository;
 import kd.mgproj.domain.policy.repository.PolicyDocumentsRepository;
 import kd.mgproj.domain.policy.repository.PolicyRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.ObjectMapper;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PolicySyncServiceImpl implements PolicySyncService {
 
 	private final ObjectMapper objectMapper;
@@ -42,6 +45,10 @@ public class PolicySyncServiceImpl implements PolicySyncService {
 		while (true) {
 			YouthPolicyApiResponse response =
 				apiClient.fetchPolicies(pageNum, pageSize);
+
+			if (response == null || response.result() == null) {
+				break;
+			}
 
 			List<YouthPolicyItem> items = response.result().youthPolicyList();
 
@@ -65,20 +72,36 @@ public class PolicySyncServiceImpl implements PolicySyncService {
 				syncedCount++;
 			}
 
-			if (items.size() < pageSize) {
+			int totalCount = response.result().pagging() == null
+				? Integer.MAX_VALUE
+				: response.result().pagging().totCount();
+
+			if (items.size() < pageSize || syncedCount >= totalCount) {
 				break;
 			}
 
 			pageNum++;
-
-			if (pageNum >= 1) {
-				break;
-			}
 		}
 
-		embeddingService.embedPolicies(savedPolicies);
+		try {
+			embeddingService.embedPolicies(savedPolicies);
+		} catch (RestClientException exception) {
+			log.error(
+				"Policies were saved, but embedding synchronization failed for {} policies",
+				savedPolicies.size(),
+				exception
+			);
+		}
 
 		return syncedCount;
+	}
+
+	@Override
+	@Transactional
+	public int reindexPolicies() {
+		List<PoliciesEntity> policies = policyRepository.findAll();
+		embeddingService.embedPolicies(policies, false);
+		return policies.size();
 	}
 
 	private void syncCondition(

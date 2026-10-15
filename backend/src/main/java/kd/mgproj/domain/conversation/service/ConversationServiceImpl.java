@@ -2,6 +2,7 @@ package kd.mgproj.domain.conversation.service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import kd.mgproj.domain.conversation.entity.ConversationEntity;
 import kd.mgproj.domain.conversation.entity.MessageEntity;
 import kd.mgproj.domain.conversation.repository.ConversationRepository;
 import kd.mgproj.domain.conversation.repository.MessageRepository;
+import kd.mgproj.domain.policy.repository.PolicyRepository;
 import kd.mgproj.domain.recommendation.dto.response.AiChatResponse;
 import kd.mgproj.domain.recommendation.service.RecommendationService;
 import kd.mgproj.domain.user.entity.UsersEntity;
@@ -36,6 +38,7 @@ public class ConversationServiceImpl implements ConversationService {
 	private final UserRepository userRepository;
 	private final MessageRepository messageRepository;
 	private final ConversationRepository conversationRepository;
+	private final PolicyRepository policyRepository;
 	private final RecommendationService recommendationService;
 
 	@Override
@@ -148,7 +151,20 @@ public class ConversationServiceImpl implements ConversationService {
 					}
 				);
 
-			return MessageResponse.from(message, references);
+			List<AiChatResponse.PolicyReferenceDto> validReferences = references.stream()
+				.filter(reference -> reference.policyId() != null)
+				.map(reference -> policyRepository.findById(reference.policyId())
+					.filter(policy -> Objects.equals(policy.getTitle(), reference.title()))
+					.map(policy -> new AiChatResponse.PolicyReferenceDto(
+						policy.getId(),
+						policy.getTitle(),
+						reference.score()
+					))
+					.orElse(null))
+				.filter(Objects::nonNull)
+				.toList();
+
+			return MessageResponse.from(message, validReferences);
 		} catch (JsonProcessingException e) {
 			return MessageResponse.from(message);
 		}
