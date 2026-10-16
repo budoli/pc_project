@@ -1,15 +1,5 @@
-import type { LoginResponse } from "../types/LoginResponse";
+import { api } from "@/shared/api/axios";
 
-export const reissue = async (): Promise<LoginResponse> => {
-    const response = await fetch("http://localhost:8080/api/v1/auth/reissue", {
-      method: "POST",
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      throw new Error("토큰 재발급 실패했습니다.");
-    }
-
-    return response.json();
-
+export const reissue = async (): Promise<void> => {
+    await api.post("/api/v1/auth/reissue");
 };

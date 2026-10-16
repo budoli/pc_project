@@ -9,16 +9,13 @@ type Props = {
 
 const AuthInitializer = ({ children }: Props) => {
     const [isLoading, setIsLoading] = useState(true);
-    const { setAccessToken, setUser, clearAuth } = useAuthStore();
+    const { setUser, clearAuth } = useAuthStore();
 
     useEffect(() => {
         const initializeAuth = async () => {
             try {
-                const token = await reissue();
-
-                setAccessToken(token.accessToken);
-
-                const user = await getCurrentUser(token.accessToken);
+                await reissue();
+                const user = await getCurrentUser();
                 setUser(user);
             } catch {
                 clearAuth();
@@ -28,7 +25,7 @@ const AuthInitializer = ({ children }: Props) => {
         };
 
         initializeAuth();
-    }, [setAccessToken, setUser, clearAuth]);
+    }, [setUser, clearAuth]);
 
     if (isLoading) {
         return null;

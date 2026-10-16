@@ -1,4 +1,4 @@
-import { type User } from "@/features/user/types/User";
+import { type User } from "@/features/user/types/user";
 import { api } from "@/shared/api/axios";
 
 export const getCurrentUser = async (): Promise<User> => {

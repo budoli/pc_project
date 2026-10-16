@@ -4,6 +4,8 @@ import UserMenu from "@/features/auth/components/UserMenu";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { getConversations } from "@/features/chat/api/chatApi";
 import type { ConversationResponse } from "@/features/chat/types/ConversationResponse";
+import PolicyDetailModal from "@/features/policy/components/PolicyDetailModal";
+import { useFavoritePolicyStore } from "@/features/policy/store/favoritePolicyStore";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -60,6 +62,13 @@ const PlusIcon = () => (
 const Sidebar = () => {
   const { user, clearAuth } = useAuthStore();
   const [conversations, setConversations] = useState<ConversationResponse[]>([]);
+  const [selectedPolicyId, setSelectedPolicyId] = useState<number | null>(null);
+  const [favoriteError, setFavoriteError] = useState(false);
+  const favorites = useFavoritePolicyStore((state) => state.favorites);
+  const loadingFavorites = useFavoritePolicyStore((state) => state.loading);
+  const loadFavorites = useFavoritePolicyStore((state) => state.load);
+  const clearFavorites = useFavoritePolicyStore((state) => state.clear);
+  const userId = user?.id;
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -67,6 +76,7 @@ const Sidebar = () => {
       await logout();
     } finally {
       clearAuth();
+      clearFavorites();
       navigate("/");
     }
   };
@@ -81,6 +91,16 @@ const Sidebar = () => {
 
     fetchConversations();
   }, [user]);
+
+  useEffect(() => {
+    if (userId === undefined) {
+      clearFavorites();
+      return;
+    }
+    loadFavorites(userId)
+      .then(() => setFavoriteError(false))
+      .catch(() => setFavoriteError(true));
+  }, [userId, loadFavorites, clearFavorites]);
 
   return (
     <aside className="fixed left-0 top-0 flex h-screen w-[260px] flex-col bg-white px-6 py-6">
@@ -99,7 +119,7 @@ const Sidebar = () => {
         {user && (
           <>
             <button
-              onClick={() => navigate("/")}
+              onClick={() => document.getElementById("favorite-policies")?.scrollIntoView({ behavior: "smooth" })}
               className="flex items-center gap-2 text-gray-700 transition-colors hover:text-gray-950">
               <BookmarkIcon />
               <span>북마크</span>
@@ -116,12 +136,21 @@ const Sidebar = () => {
 
       {user && (
         <div className="mt-16 flex-1 overflow-y-auto">
-          <section>
+          <section id="favorite-policies">
             <h3 className="mb-5 font-bold">관심정책</h3>
             <ul className="space-y-4">
-              <li>policy 예시 예시</li>
-              <li>policy 예시 예시</li>
-              <li>policy 예시 예시</li>
+              {favorites.map((policy) => (
+                <li key={policy.id}>
+                  <button type="button" onClick={() => setSelectedPolicyId(policy.id)}
+                    className="w-full truncate text-left text-sm text-gray-700 hover:text-blue-600"
+                    title={policy.title}>
+                    {policy.title}
+                  </button>
+                </li>
+              ))}
+              {loadingFavorites && <li className="text-sm text-gray-500">불러오는 중...</li>}
+              {!loadingFavorites && !favoriteError && favorites.length === 0 && <li className="text-sm text-gray-500">관심정책이 없습니다.</li>}
+              {favoriteError && <li className="text-sm text-red-600">관심정책을 불러오지 못했습니다.</li>}
             </ul>
           </section>
 
@@ -150,6 +179,9 @@ const Sidebar = () => {
             onLogout={handleLogout}
           />
         </div>
+      )}
+      {selectedPolicyId !== null && (
+        <PolicyDetailModal policyId={selectedPolicyId} onClose={() => setSelectedPolicyId(null)} />
       )}
     </aside>
   );

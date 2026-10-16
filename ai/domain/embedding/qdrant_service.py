@@ -12,10 +12,7 @@ class QdrantService:
     )
 
   def create_collection_if_not_exists(self) :
-    collections = self.client.get_collections().collections
-    names = [collection.name for collection in collections]
-
-    if COLLECTION_NAME not in names :
+    if not self._collection_exists() :
       self.client.create_collection(
         collection_name=COLLECTION_NAME,
         vectors_config=VectorParams(
@@ -23,6 +20,16 @@ class QdrantService:
           distance=Distance.COSINE
         )
       )
+
+  def reset_collection(self) :
+    if self._collection_exists() :
+      self.client.delete_collection(collection_name=COLLECTION_NAME)
+
+    self.create_collection_if_not_exists()
+
+  def _collection_exists(self) -> bool:
+    collections = self.client.get_collections().collections
+    return any(collection.name == COLLECTION_NAME for collection in collections)
 
   def upsert_policy(self, point_id: int, vector: list[float], payload: dict) :
     self.client.upsert(

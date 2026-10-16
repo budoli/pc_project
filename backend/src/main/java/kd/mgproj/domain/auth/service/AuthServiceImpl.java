@@ -86,7 +86,7 @@ public class AuthServiceImpl implements AuthService {
 	@Override
 	public TokenResponseDto reissue(String refreshToken) {
 
-		if (refreshToken == null || !jwtProvider.validateToken(refreshToken)) {
+		if (refreshToken == null || !jwtProvider.validateRefreshToken(refreshToken)) {
 			throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
 		}
 

@@ -32,6 +32,9 @@ public class JwtProvider {
 	private static final String ACCESS_HEADER = "Authorization";
 	private static final String BEARER_PREFIX = "Bearer ";
 	private static final String CLAIM_ROLE = "role";
+	private static final String CLAIM_TOKEN_TYPE = "tokenType";
+	private static final String ACCESS_TOKEN_TYPE = "access";
+	private static final String REFRESH_TOKEN_TYPE = "refresh";
 	private final UserDetailServiceImpl detailsService;
 	@Value("${jwt.secret}")
 	private String secretKey;
@@ -55,6 +58,7 @@ public class JwtProvider {
 		return Jwts.builder()
 			.subject(userId.toString())
 			.claim(CLAIM_ROLE, role.name())
+			.claim(CLAIM_TOKEN_TYPE, ACCESS_TOKEN_TYPE)
 			.issuedAt(new Date())
 			.expiration(new Date(System.currentTimeMillis() + accessExpiration))
 			.signWith(getSigningKey())
@@ -70,6 +74,7 @@ public class JwtProvider {
 		return Jwts.builder()
 			.subject(userId.toString())
 			.claim(CLAIM_ROLE, role.name())
+			.claim(CLAIM_TOKEN_TYPE, REFRESH_TOKEN_TYPE)
 			.issuedAt(new Date())
 			.expiration(new Date(System.currentTimeMillis() + refreshExpiration))
 			.signWith(getSigningKey())
@@ -90,7 +95,7 @@ public class JwtProvider {
 		}
 
 		for (Cookie cookie : cookies) {
-			if ("refreshToken".equals(cookie.getName())) {
+			if ("accessToken".equals(cookie.getName())) {
 				return cookie.getValue();
 			}
 		}
@@ -106,7 +111,7 @@ public class JwtProvider {
 		}
 
 		for (Cookie cookie : cookies) {
-			if ("accessToken".equals(cookie.getName())) {
+			if ("refreshToken".equals(cookie.getName())) {
 				return cookie.getValue();
 			}
 		}
@@ -126,7 +131,15 @@ public class JwtProvider {
 	 * @param token JWT Token
 	 * @return      유효하면 true, 아니면 false
 	 */
-	public boolean validateToken(String token) {
+	public boolean validateAccessToken(String token) {
+		return validateToken(token, ACCESS_TOKEN_TYPE);
+	}
+
+	public boolean validateRefreshToken(String token) {
+		return validateToken(token, REFRESH_TOKEN_TYPE);
+	}
+
+	private boolean validateToken(String token, String expectedType) {
 		try {
 			Claims claims = Jwts.parser()
 				.verifyWith(getSigningKey())
@@ -134,7 +147,9 @@ public class JwtProvider {
 				.parseSignedClaims(token)
 				.getPayload();
 
-			return claims.getExpiration().after(new Date());
+			return claims.getExpiration() != null
+				&& claims.getExpiration().after(new Date())
+				&& expectedType.equals(claims.get(CLAIM_TOKEN_TYPE, String.class));
 		} catch (JwtException | IllegalArgumentException e) {
 			return false;
 		}
