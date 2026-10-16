@@ -25,10 +25,6 @@ public class EmbeddingService {
 	private String aiServerUrl;
 
 	public void embedPolicies(List<PoliciesEntity> policies) {
-		embedPolicies(policies, true);
-	}
-
-	public void embedPolicies(List<PoliciesEntity> policies, boolean replaceExisting) {
 		List<EmbeddingPolicyRequest> requests = policies.stream()
 			.map(policy -> new EmbeddingPolicyRequest(
 				policy.getId(),
@@ -46,8 +42,7 @@ public class EmbeddingService {
 				new EmbeddingPolicyBatchRequest(requests.subList(start, end));
 
 			restClient.post()
-				.uri(aiServerUrl + "/api/v1/ai/embeddings/policies/batch?replace="
-					+ (replaceExisting && start == 0))
+				.uri(aiServerUrl + "/api/v1/ai/embeddings/policies/batch")
 				.body(batchRequest)
 				.retrieve()
 				.toBodilessEntity();
