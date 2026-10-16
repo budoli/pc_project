@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from qdrant_client.models import PointStruct
 from .schemas import PolicyEmbeddingRequest, PolicyEmbeddingBatchRequest, SearchRequest
 from .mappers import build_policy_embedding_text, build_policy_payload, map_qdrant_result_to_policy
 from domain.dependencies import get_embedding_service, get_qdrant_service
@@ -30,26 +31,38 @@ def embed_policy(request: PolicyEmbeddingRequest):
   }
 
 @router.post("/embeddings/policies/batch")
-def embed_policies_batch(request: PolicyEmbeddingBatchRequest) :
+def embed_policies_batch(request: PolicyEmbeddingBatchRequest, replace: bool = False) :
   embedding_service = get_embedding_service()
   qdrant_service = get_qdrant_service()
-  saved_count = 0
 
-  for policy in request.policies:
-    vector = embedding_service.embed(build_policy_embedding_text(policy))
-    payload = build_policy_payload(policy)
+  if replace:
+    qdrant_service.reset_collection()
 
-    qdrant_service.upsert_policy(
-      point_id=policy.policyId,
+  if not request.policies:
+    return {
+      "message": "batch embedding saved",
+      "count": 0
+    }
+
+  vectors = embedding_service.embed_batch([
+    build_policy_embedding_text(policy)
+    for policy in request.policies
+  ])
+
+  points = [
+    PointStruct(
+      id=policy.policyId,
       vector=vector,
-      payload=payload
+      payload=build_policy_payload(policy)
     )
+    for policy, vector in zip(request.policies, vectors)
+  ]
 
-    saved_count += 1
+  qdrant_service.upsert_policies(points)
 
   return {
     "message": "batch embedding saved",
-    "count" : saved_count
+    "count" : len(points)
   }
 
 @router.post("/search/similar-policies")
