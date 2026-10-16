@@ -31,12 +31,9 @@ def embed_policy(request: PolicyEmbeddingRequest):
   }
 
 @router.post("/embeddings/policies/batch")
-def embed_policies_batch(request: PolicyEmbeddingBatchRequest, replace: bool = False) :
+def embed_policies_batch(request: PolicyEmbeddingBatchRequest) :
   embedding_service = get_embedding_service()
   qdrant_service = get_qdrant_service()
-
-  if replace:
-    qdrant_service.reset_collection()
 
   if not request.policies:
     return {

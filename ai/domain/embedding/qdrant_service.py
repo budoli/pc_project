@@ -21,12 +21,6 @@ class QdrantService:
         )
       )
 
-  def reset_collection(self) :
-    if self._collection_exists() :
-      self.client.delete_collection(collection_name=COLLECTION_NAME)
-
-    self.create_collection_if_not_exists()
-
   def _collection_exists(self) -> bool:
     collections = self.client.get_collections().collections
     return any(collection.name == COLLECTION_NAME for collection in collections)

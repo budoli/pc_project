@@ -4,9 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.client.RestClientException;
 
 import jakarta.transaction.Transactional;
+import kd.mgproj.core.error.ErrorCode;
+import kd.mgproj.core.error.exception.BusinessException;
 import kd.mgproj.domain.embedding.service.EmbeddingService;
 import kd.mgproj.domain.policy.client.YouthPolicyApiClient;
 import kd.mgproj.domain.policy.dto.YouthPolicyItem;
@@ -83,14 +87,18 @@ public class PolicySyncServiceImpl implements PolicySyncService {
 			pageNum++;
 		}
 
-		try {
-			embeddingService.embedPolicies(savedPolicies);
-		} catch (RestClientException exception) {
-			log.error(
-				"Policies were saved, but embedding synchronization failed for {} policies",
-				savedPolicies.size(),
-				exception
-			);
+		if (!savedPolicies.isEmpty()) {
+			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+				@Override
+				public void afterCommit() {
+					try {
+						embeddingService.embedPolicies(savedPolicies);
+					} catch (RestClientException exception) {
+						log.error("Policy embedding failed after database commit", exception);
+						throw new BusinessException(ErrorCode.EXTERNAL_API_FAILED);
+					}
+				}
+			});
 		}
 
 		return syncedCount;
@@ -100,7 +108,7 @@ public class PolicySyncServiceImpl implements PolicySyncService {
 	@Transactional
 	public int reindexPolicies() {
 		List<PoliciesEntity> policies = policyRepository.findAll();
-		embeddingService.embedPolicies(policies, false);
+		embeddingService.embedPolicies(policies);
 		return policies.size();
 	}
 
