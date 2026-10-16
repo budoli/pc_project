@@ -11,4 +11,3 @@ pydantic
 
 httpx
 
-google-genai

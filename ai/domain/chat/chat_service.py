@@ -3,10 +3,10 @@ from domain.embedding.mappers import map_qdrant_result_to_policy
 
 
 class ChatService:
-    def __init__(self, embedding_service, qdrant_service, gemini_service):
+    def __init__(self, embedding_service, qdrant_service, ai_service):
         self.embedding_service = embedding_service
         self.qdrant_service = qdrant_service
-        self.gemini_service = gemini_service
+        self.ai_service = ai_service
 
     def chat(self, query: str, limit: int = 5, profile=None, messages=None) -> dict:
         search_query = self._build_search_query(query, profile)
@@ -18,7 +18,7 @@ class ChatService:
         policies = [map_qdrant_result_to_policy(result) for result in results]
 
         prompt = build_policy_prompt(query, policies, profile=profile, messages=messages or [])
-        answer = self.gemini_service.generate(prompt)
+        answer = self.ai_service.generate(prompt)
 
         references = [
             {

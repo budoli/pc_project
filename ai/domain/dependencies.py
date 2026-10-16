@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from domain.ai.gemini_service import GeminiService
+from domain.ai.ollama_service import OllamaService
 from domain.chat.chat_service import ChatService
 from domain.embedding.embedding_service import EmbeddingService
 from domain.embedding.qdrant_service import QdrantService
@@ -17,8 +17,8 @@ def get_qdrant_service() -> QdrantService:
 
 
 @lru_cache
-def get_gemini_service() -> GeminiService:
-    return GeminiService()
+def get_ollama_service() -> OllamaService:
+    return OllamaService()
 
 
 @lru_cache
@@ -26,5 +26,5 @@ def get_chat_service() -> ChatService:
     return ChatService(
         embedding_service=get_embedding_service(),
         qdrant_service=get_qdrant_service(),
-        gemini_service=get_gemini_service(),
+        ai_service=get_ollama_service(),
     )

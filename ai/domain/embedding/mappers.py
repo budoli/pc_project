@@ -6,7 +6,6 @@ def build_policy_embedding_text(policy: PolicyEmbeddingRequest) -> str:
     제목: {policy.title}
     설명: {policy.description}
     기관: {policy.organization}
-    지역: {policy.region}
     분야: {policy.category}
     """
 
