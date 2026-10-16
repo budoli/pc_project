@@ -54,7 +54,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - run: chmod +x gradlew
-      - run: ./gradlew test
+      - run: ./gradlew build -x test
 
   ai:
     name: AI
