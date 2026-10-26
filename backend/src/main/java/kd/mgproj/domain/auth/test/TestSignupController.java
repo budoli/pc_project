@@ -12,7 +12,7 @@ import kd.mgproj.domain.user.dto.request.SignupRequestDto;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@Profile("local")
+@Profile("!prod")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/test")
 public class TestSignupController {

@@ -1,0 +1,3 @@
+{"id": "man-001", "query": "서울 사는 26살 취준생인데 월세 지원 받을 수 있는 거 있어?", "relevant": ["<정답 정책 plcyNo>"], "profile": {"age": 26, "region": "서울특별시", "regionCode": "11", "jobStatus": "UNEMPLOYED"}, "note": "구어체, 정책명 없음"}
+{"id": "man-002", "query": "청년도약계좌 가입 조건 알려줘", "relevant": ["<정답 정책 plcyNo>"], "note": "정책명 직접 언급 - BM25가 유리할 질문"}
+{"id": "man-003", "query": "부산에서 창업 준비 중인데 사무실 공간 지원해주는 곳 있나요", "relevant": ["<정답1 plcyNo>", "<정답2 plcyNo>"], "note": "정답이 여러 개인 경우"}

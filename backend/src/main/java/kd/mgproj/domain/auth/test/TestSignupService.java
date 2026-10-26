@@ -16,7 +16,7 @@ import kd.mgproj.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@Profile("local")
+@Profile("!prod")
 @RequiredArgsConstructor
 public class TestSignupService {
 	private final UserRepository userRepository;

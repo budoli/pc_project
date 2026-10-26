@@ -1,9 +1,11 @@
 package kd.mgproj.domain.policy.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -12,6 +14,12 @@ import kd.mgproj.domain.policy.entity.PoliciesEntity;
 
 public interface PolicyRepository extends JpaRepository<PoliciesEntity, Long> {
 	Optional<PoliciesEntity> findByExternalId(String s);
+
+	List<PoliciesEntity> findAllByExternalIdIn(Collection<String> externalIds);
+
+	@Modifying(clearAutomatically = true)
+	@Query("update PoliciesEntity p set p.embeddedHash = p.contentHash where p.id in :ids")
+	int markEmbedded(@Param("ids") Collection<Long> ids);
 
 	@Query("""
 		    select distinct p

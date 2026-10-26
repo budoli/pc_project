@@ -7,6 +7,7 @@ import HomePage from "@/pages/HomePage";
 import Signup from "@/pages/Signup";
 import ChatPage from "@/pages/ChatPage";
 import SignupProfilePage from "@/pages/SignupProfile";
+import AdminPage from "@/pages/AdminPage";
 
 
 export const router = createBrowserRouter([
@@ -25,6 +26,10 @@ export const router = createBrowserRouter([
             {
                 path: "chat/:conversationId",
                 element: <ChatPage />,
+            },
+            {
+                path: "admin",
+                element: <AdminPage />,
             }
         ],
     },

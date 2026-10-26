@@ -1,0 +1,40 @@
+# 복사해서 application.properties 로 저장 후 값 입력 (gitignore 대상)
+
+# PostgreSQL
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.datasource.url=jdbc:postgresql://localhost:5432/policy
+spring.datasource.username=
+spring.datasource.password=
+
+# JPA setting: create -> update -> none
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.generate-ddl=true
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+# Gmail (이메일 인증용, Google 앱 비밀번호)
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=
+spring.mail.password=
+
+# SMTP
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+spring.mail.properties.mail.smtp.starttls.required=true
+spring.mail.properties.mail.smtp.connectiontimeout=5000
+spring.mail.properties.mail.smtp.timeout=5000
+spring.mail.properties.mail.smtp.writetimeout=5000
+spring.mail.default-encoding=UTF-8
+
+# JWT (HS256: 32바이트 이상, expiration: ms)
+jwt.secret=
+jwt.access-expiration=1800000
+jwt.refresh-expiration=1209600000
+
+# 온통청년 Open API
+youth.api.base-url=https://www.youthcenter.go.kr
+youth.api.key=
+
+# AI server (FastAPI)
+ai.server.url=http://localhost:8000

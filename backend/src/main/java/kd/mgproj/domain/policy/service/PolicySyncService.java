@@ -1,7 +1,9 @@
 package kd.mgproj.domain.policy.service;
 
+import kd.mgproj.domain.policy.dto.response.PolicySyncResponse;
+
 public interface PolicySyncService {
-	int syncPolicies();
+	PolicySyncResponse syncPolicies();
 
 	int reindexPolicies();
 }
