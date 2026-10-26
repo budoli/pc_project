@@ -2,6 +2,7 @@ import { Logo } from "@/assets";
 import { Button, Input } from "@/shared/ui"
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import axios from "axios";
 import { login } from "@/features/auth/api/login";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { getCurrentUser } from "../user/api/getCurrentUser";
@@ -10,23 +11,51 @@ type Props = {
   onClose: () => void;
 }
 
+const toLoginErrorMessage = (error: unknown) => {
+  if (axios.isAxiosError(error)) {
+    if (!error.response) {
+      return "서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.";
+    }
+    // 계정 존재 여부가 드러나지 않도록 401과 404를 같은 문구로 보여준다
+    if (error.response.status === 401 || error.response.status === 404) {
+      return "이메일 또는 비밀번호가 올바르지 않습니다.";
+    }
+  }
+  return "로그인하지 못했습니다. 다시 시도해주세요.";
+};
 
 const LoginModal = ({ onClose }: Props) => {
-  const [email, setEmail] = useState("user1@user.com");
-  const [password, setPassword] = useState("user1234");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const { setUser } = useAuthStore();
 
   const handleLogin = async () => {
-    await login({
-      email,
-      password,
-    });
+    if (submitting) return;
+    if (!email || !password) {
+      setError("이메일과 비밀번호를 입력해주세요.");
+      return;
+    }
 
-    const user = await getCurrentUser();
+    setSubmitting(true);
+    setError("");
+    try {
+      await login({
+        email,
+        password,
+      });
 
-    setUser(user);
+      const user = await getCurrentUser();
 
-    onClose();
+      setUser(user);
+
+      onClose();
+    } catch (e) {
+      setError(toLoginErrorMessage(e));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -70,8 +99,11 @@ const LoginModal = ({ onClose }: Props) => {
               onChange={(e) => setPassword(e.target.value)}
             />
 
+            {error && <p role="alert" className="text-xs text-red-600">{error}</p>}
 
-            <Button variant="primary" onClick={handleLogin}>로그인</Button>
+            <Button variant="primary" onClick={handleLogin} disabled={submitting}>
+              {submitting ? "로그인 중..." : "로그인"}
+            </Button>
             <div className="flex items-center gap-4">
               <div className="h-px flex-1 bg-gray-300" />
               <span className="sm text-gray-400">또는</span>

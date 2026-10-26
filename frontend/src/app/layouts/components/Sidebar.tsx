@@ -2,12 +2,12 @@ import { Logo } from "@/assets";
 import { logout } from "@/features/auth/api/logout";
 import UserMenu from "@/features/auth/components/UserMenu";
 import { useAuthStore } from "@/features/auth/store/authStore";
-import { getConversations } from "@/features/chat/api/chatApi";
+import { deleteConversation, getConversations } from "@/features/chat/api/chatApi";
 import type { ConversationResponse } from "@/features/chat/types/ConversationResponse";
 import PolicyDetailModal from "@/features/policy/components/PolicyDetailModal";
 import { useFavoritePolicyStore } from "@/features/policy/store/favoritePolicyStore";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useMatch, useNavigate } from "react-router-dom";
 
 const iconClassName = "h-4 w-4 shrink-0";
 
@@ -59,11 +59,31 @@ const PlusIcon = () => (
   </svg>
 );
 
+const TrashIcon = () => (
+  <svg
+    aria-hidden="true"
+    className={iconClassName}
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M3 6h18" />
+    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+  </svg>
+);
+
 const Sidebar = () => {
   const { user, clearAuth } = useAuthStore();
   const [conversations, setConversations] = useState<ConversationResponse[]>([]);
   const [selectedPolicyId, setSelectedPolicyId] = useState<number | null>(null);
   const [favoriteError, setFavoriteError] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deleteError, setDeleteError] = useState(false);
+  const currentChat = useMatch("/chat/:conversationId");
   const favorites = useFavoritePolicyStore((state) => state.favorites);
   const loadingFavorites = useFavoritePolicyStore((state) => state.loading);
   const loadFavorites = useFavoritePolicyStore((state) => state.load);
@@ -78,6 +98,27 @@ const Sidebar = () => {
       clearAuth();
       clearFavorites();
       navigate("/");
+    }
+  };
+
+  const handleDeleteConversation = async (conversation: ConversationResponse) => {
+    if (deletingId !== null) return;
+    if (!window.confirm(`'${conversation.title}' 대화를 삭제할까요? 삭제한 대화는 되돌릴 수 없습니다.`)) return;
+
+    setDeletingId(conversation.conversationId);
+    setDeleteError(false);
+    try {
+      await deleteConversation(conversation.conversationId);
+      setConversations((prev) => prev.filter((item) => item.conversationId !== conversation.conversationId));
+
+      // 보고 있던 대화를 지우면 빈 화면이 남지 않도록 새 채팅으로 이동한다
+      if (Number(currentChat?.params.conversationId) === conversation.conversationId) {
+        navigate("/");
+      }
+    } catch {
+      setDeleteError(true);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -158,15 +199,27 @@ const Sidebar = () => {
             <h3 className="mb-5 font-bold">이전 대화</h3>
             <ul className="space-y-1">
               {conversations.map((conversation) => (
-                <li key={conversation.conversationId}>
+                <li key={conversation.conversationId} className="group relative">
                   <button onClick={() => navigate(`/chat/${conversation.conversationId}`)}
-                    className="sm w-full truncate rounded-lg px-3 py-2 text-left text-gray-700 hover:bg-gray-100"
+                    className="sm w-full truncate rounded-lg py-2 pl-3 pr-9 text-left text-gray-700 group-hover:bg-gray-100"
+                    title={conversation.title}
                   >
                     {conversation.title}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteConversation(conversation)}
+                    disabled={deletingId !== null}
+                    aria-label={`'${conversation.title}' 대화 삭제`}
+                    title="대화 삭제"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-gray-400 opacity-0 transition hover:bg-gray-200 hover:text-red-600 focus-visible:opacity-100 group-hover:opacity-100 disabled:cursor-not-allowed"
+                  >
+                    <TrashIcon />
                   </button>
                 </li>
               ))}
             </ul>
+            {deleteError && <p role="alert" className="mt-2 text-sm text-red-600">대화를 삭제하지 못했습니다. 다시 시도해주세요.</p>}
           </section>
         </div>
       )}

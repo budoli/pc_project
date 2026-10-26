@@ -2,9 +2,11 @@ import { api } from "@/shared/api/axios";
 import type { ConversationResponse } from "../types/ConversationResponse";
 import type { ChatMessageResponse } from "../types/ChatMessageResponse";
 import type { SendConversationMessageResponse } from "../types/SendConversationMessageResponse";
+import type { CreateConversationResponse } from "../types/CreateConversationResponse";
 
-export const createConversation = async (firstMessage?: string) => {
-  const response = await api.post<ConversationResponse>(
+// 대화 생성과 첫 메시지 전송을 한 번에 처리한다. AI가 실패하면 대화도 만들어지지 않는다
+export const createConversation = async (firstMessage: string) => {
+  const response = await api.post<CreateConversationResponse>(
     "/api/v1/conversations",
     { firstMessage }
   );
@@ -18,6 +20,10 @@ export const getConversations = async () => {
   );
 
   return response.data;
+};
+
+export const deleteConversation = async (conversationId: number) => {
+  await api.delete(`/api/v1/conversations/${conversationId}`);
 };
 
 export const getConversationMessages = async (conversationId: number) => {

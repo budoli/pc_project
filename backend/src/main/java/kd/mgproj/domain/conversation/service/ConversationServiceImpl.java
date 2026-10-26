@@ -18,6 +18,7 @@ import kd.mgproj.core.error.exception.BusinessException;
 import kd.mgproj.domain.conversation.dto.request.CreateConversationRequest;
 import kd.mgproj.domain.conversation.dto.request.SendMessageRequest;
 import kd.mgproj.domain.conversation.dto.response.ConversationResponse;
+import kd.mgproj.domain.conversation.dto.response.CreateConversationResponse;
 import kd.mgproj.domain.conversation.dto.response.MessageResponse;
 import kd.mgproj.domain.conversation.dto.response.SendMessageResponse;
 import kd.mgproj.domain.conversation.entity.ConversationEntity;
@@ -41,21 +42,27 @@ public class ConversationServiceImpl implements ConversationService {
 	private final PolicyRepository policyRepository;
 	private final RecommendationService recommendationService;
 
+	/**
+	 * 대화 생성과 첫 메시지 전송을 한 트랜잭션에서 처리한다.
+	 * AI 호출이 실패하면 대화까지 롤백돼 메시지 없는 빈 대화가 남지 않는다.
+	 */
 	@Override
 	@Transactional
-	public ConversationResponse createConversation(Long userId, CreateConversationRequest request) {
+	public CreateConversationResponse createConversation(Long userId, CreateConversationRequest request) {
+		if (request.firstMessage() == null || request.firstMessage().isBlank()) {
+			throw new BusinessException(ErrorCode.EMPTY_MESSAGE);
+		}
+
 		UsersEntity user = userRepository.findById(userId)
 			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-		ConversationEntity conversation = ConversationEntity.create(
-			user,
-			request.firstMessage()
+		ConversationEntity conversation = conversationRepository.save(
+			ConversationEntity.create(user, request.firstMessage())
 		);
 
-		ConversationEntity saveConversation =
-			conversationRepository.save(conversation);
+		SendMessageResponse firstExchange = appendExchange(userId, conversation, request.firstMessage());
 
-		return ConversationResponse.from(saveConversation);
+		return CreateConversationResponse.of(conversation, firstExchange);
 	}
 
 	@Override
@@ -87,17 +94,32 @@ public class ConversationServiceImpl implements ConversationService {
 	) {
 		ConversationEntity conversation = getConversation(conversationId, userId);
 
+		return appendExchange(userId, conversation, request.message());
+	}
+
+	// 본인 대화만 삭제할 수 있다. 메시지가 대화를 FK로 참조하므로 메시지부터 지운다
+	@Override
+	@Transactional
+	public void deleteConversation(Long userId, Long conversationId) {
+		ConversationEntity conversation = getConversation(conversationId, userId);
+
+		messageRepository.deleteAllByConversationId(conversation.getId());
+		conversationRepository.delete(conversation);
+	}
+
+	// 사용자 메시지를 저장하고 AI 답변을 받아 저장한다. 호출하는 쪽의 트랜잭션 안에서 실행된다
+	private SendMessageResponse appendExchange(Long userId, ConversationEntity conversation, String message) {
 		MessageEntity userMessage = messageRepository.save(
 			MessageEntity.create(
 				conversation,
 				MessageRole.USER,
-				request.message()
+				message
 			)
 		);
 
 		List<MessageEntity> recentMessages = messageRepository
 			.findByConversationIdOrderByIdDesc(
-				conversationId,
+				conversation.getId(),
 				PageRequest.of(0, 20)
 			)
 			.stream()
@@ -106,7 +128,7 @@ public class ConversationServiceImpl implements ConversationService {
 
 		AiChatResponse aiResponse = recommendationService.chatWithHistory(
 			userId,
-			request.message(),
+			message,
 			recentMessages
 		);
 
@@ -127,7 +149,7 @@ public class ConversationServiceImpl implements ConversationService {
 		);
 
 		conversation.updateLastMessage(aiResponse.answer());
-		conversation.updateTitleIfEmpty(request.message());
+		conversation.updateTitleIfEmpty(message);
 
 		return SendMessageResponse.of(
 			userMessage,

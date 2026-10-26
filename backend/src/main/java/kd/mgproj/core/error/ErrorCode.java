@@ -61,7 +61,8 @@ public enum ErrorCode {
 	AI_RESPONSE_FAILED(502, "AI-502", "AI 응답 생성에 실패했습니다."),
 
 	//CHAT
-	CONVERSATION_NOT_FOUND(404, "CHAT-404", "대화를 찾을 수 없습니다.");
+	CONVERSATION_NOT_FOUND(404, "CHAT-404", "대화를 찾을 수 없습니다."),
+	EMPTY_MESSAGE(400, "CHAT-400", "메시지를 입력해주세요.");
 
 	private final int status;
 	private final String errorCode;
