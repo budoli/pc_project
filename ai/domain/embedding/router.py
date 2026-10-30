@@ -62,6 +62,14 @@ def embed_policies_batch(request: PolicyEmbeddingBatchRequest) :
     "count" : len(points)
   }
 
+@router.get("/embeddings/stats")
+def embedding_stats():
+  qdrant_service = get_qdrant_service()
+
+  return {
+    "vectorCount": qdrant_service.count()
+  }
+
 @router.post("/search/similar-policies")
 def search_policy(request: SearchRequest) :
   embedding_service = get_embedding_service()

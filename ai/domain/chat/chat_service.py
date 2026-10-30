@@ -1,4 +1,5 @@
 from domain.ai.prompt import build_policy_prompt
+from domain.chat.region import REGION_LABELS, find_region_codes
 from domain.embedding.mappers import map_qdrant_result_to_policy
 
 
@@ -9,11 +10,17 @@ class ChatService:
         self.ai_service = ai_service
 
     def chat(self, query: str, limit: int = 5, profile=None, messages=None) -> dict:
+        # 질문에 시도 이름이 있으면 프로필 지역보다 우선한다 ("부산 정책 알려줘" 등)
+        query_region_codes = find_region_codes(query)
+        if query_region_codes:
+            profile = self._with_region(profile, query_region_codes)
+        region_codes = query_region_codes or self._profile_region_codes(profile)
+
         search_query = self._build_search_query(query, profile)
         vector = self.embedding_service.embed(search_query)
 
         results = self.qdrant_service.search(vector, max(limit * 20, 100))
-        results = self._filter_by_region_code(results, profile)[:limit]
+        results = self._filter_by_region_codes(results, region_codes)[:limit]
 
         policies = [map_qdrant_result_to_policy(result) for result in results]
 
@@ -59,23 +66,36 @@ class ChatService:
         {profile_text}
         """
 
-    def _filter_by_region_code(self, results, profile):
+    def _with_region(self, profile, region_codes: list[str]):
+        # 검색 질의와 답변 프롬프트에도 질문의 지역이 들어가도록 프로필 지역을 바꾼다
+        if profile is None:
+            return None
+
+        return profile.model_copy(update={
+            "region": ", ".join(REGION_LABELS[code] for code in region_codes),
+            "regionCode": region_codes[0],
+        })
+
+    def _profile_region_codes(self, profile) -> list[str]:
         region_code = getattr(profile, "regionCode", None) if profile else None
         if not region_code:
-            return results
+            return []
 
         region_code = str(region_code).strip()[:2]
-        if not region_code:
+        return [region_code] if region_code else []
+
+    def _filter_by_region_codes(self, results, region_codes: list[str]):
+        if not region_codes:
             return results
 
         return [
             result
             for result in results
-            if self._matches_region_code(result.payload.get("region"), region_code)
+            if self._matches_region_codes(result.payload.get("region"), region_codes)
         ]
 
 
-    def _matches_region_code(self, policy_region, region_code: str) -> bool:
+    def _matches_region_codes(self, policy_region, region_codes: list[str]) -> bool:
         if policy_region is None:
             return False
 
@@ -89,5 +109,6 @@ class ChatService:
         ]
 
         return any(
-            code.startswith(region_code) or code.startswith("00")
-			for code in codes)
+            code.startswith("00") or any(code.startswith(region_code) for region_code in region_codes)
+            for code in codes
+        )

@@ -6,16 +6,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import kd.mgproj.domain.embedding.dto.request.EmbeddingPolicyBatchRequest;
 import kd.mgproj.domain.embedding.dto.request.EmbeddingPolicyRequest;
 import kd.mgproj.domain.embedding.dto.request.EmbeddingSearchRequest;
 import kd.mgproj.domain.embedding.dto.response.EmbeddingSearchResponse;
+import kd.mgproj.domain.embedding.dto.response.EmbeddingStatsResponse;
 import kd.mgproj.domain.policy.entity.PoliciesEntity;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmbeddingService {
 	private static final int EMBEDDING_BATCH_SIZE = 25;
 
@@ -46,6 +50,24 @@ public class EmbeddingService {
 				.body(batchRequest)
 				.retrieve()
 				.toBodilessEntity();
+		}
+	}
+
+	/**
+	 * Qdrant에 저장된 정책 벡터 수
+	 * @return AI 서버에 연결할 수 없으면 null
+	 */
+	public Long countVectors() {
+		try {
+			EmbeddingStatsResponse response = restClient.get()
+				.uri(aiServerUrl + "/api/v1/ai/embeddings/stats")
+				.retrieve()
+				.body(EmbeddingStatsResponse.class);
+
+			return response == null ? null : response.vectorCount();
+		} catch (RestClientException exception) {
+			log.warn("Failed to fetch embedding stats: {}", exception.getMessage());
+			return null;
 		}
 	}
 

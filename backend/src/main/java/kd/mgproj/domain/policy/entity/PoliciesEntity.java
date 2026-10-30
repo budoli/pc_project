@@ -50,9 +50,18 @@ public class PoliciesEntity extends BaseEntity {
 	@Column(columnDefinition = "TEXT")
 	private String rawData;
 
+	// rawData 의 SHA-256. 같으면 동기화 때 갱신·임베딩을 건너뛴다
+	@Column(length = 64)
+	private String contentHash;
+
+	// 마지막으로 임베딩에 성공한 시점의 contentHash. 다르면 다시 임베딩해야 한다
+	@Column(length = 64)
+	private String embeddedHash;
+
 	public static PoliciesEntity fromYouthPolicy(
 		YouthPolicyItem item,
-		String rawData
+		String rawData,
+		String contentHash
 	) {
 		PoliciesEntity policy = new PoliciesEntity();
 
@@ -67,6 +76,7 @@ public class PoliciesEntity extends BaseEntity {
 		policy.sourceUrl = item.aplyUrlAddr();
 		policy.status = PolicyStatus.OPEN;
 		policy.rawData = rawData;
+		policy.contentHash = contentHash;
 
 		return policy;
 	}
@@ -87,7 +97,8 @@ public class PoliciesEntity extends BaseEntity {
 
 	public PoliciesEntity updateFromYouthPolicy(
 		YouthPolicyItem item,
-		String rawData
+		String rawData,
+		String contentHash
 	) {
 		this.title = item.plcyNm();
 		this.description = item.plcyExplnCn();
@@ -98,7 +109,12 @@ public class PoliciesEntity extends BaseEntity {
 		this.category = PolicyCategory.from(item.lclsfNm());
 		this.sourceUrl = item.aplyUrlAddr();
 		this.rawData = rawData;
+		this.contentHash = contentHash;
 
 		return this;
+	}
+
+	public boolean needsEmbedding() {
+		return contentHash == null || !contentHash.equals(embeddedHash);
 	}
 }

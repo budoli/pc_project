@@ -20,6 +20,77 @@
   .sm {
     @apply text-sm leading-[140%] tracking-[-0.025em];
   }
+
+  /* AI 답변 마크다운: Tailwind preflight가 지운 제목·목록·표 스타일을 되살린다 */
+  .chat-markdown > * + * {
+    @apply mt-3;
+  }
+
+  .chat-markdown h1,
+  .chat-markdown h2,
+  .chat-markdown h3,
+  .chat-markdown h4 {
+    @apply mt-5 font-semibold text-gray-900 first:mt-0;
+  }
+
+  .chat-markdown h1 {
+    @apply text-lg;
+  }
+
+  .chat-markdown h2,
+  .chat-markdown h3 {
+    @apply text-base;
+  }
+
+  .chat-markdown ul {
+    @apply list-disc space-y-1 pl-5;
+  }
+
+  .chat-markdown ol {
+    @apply list-decimal space-y-1 pl-5;
+  }
+
+  .chat-markdown li > ul,
+  .chat-markdown li > ol {
+    @apply mt-1;
+  }
+
+  .chat-markdown strong {
+    @apply font-semibold text-gray-900;
+  }
+
+  .chat-markdown a {
+    @apply text-blue-600 underline underline-offset-2;
+  }
+
+  .chat-markdown hr {
+    @apply my-4 border-gray-300;
+  }
+
+  .chat-markdown blockquote {
+    @apply border-l-4 border-gray-300 pl-3 text-gray-600;
+  }
+
+  .chat-markdown code {
+    @apply rounded bg-gray-200 px-1 py-0.5 text-[0.9em];
+  }
+
+  .chat-markdown table {
+    @apply w-full border-collapse text-left text-[13px];
+  }
+
+  .chat-markdown th,
+  .chat-markdown td {
+    @apply border border-gray-300 px-2.5 py-1.5 align-top;
+  }
+
+  .chat-markdown th {
+    @apply bg-gray-200 font-semibold whitespace-nowrap text-gray-900;
+  }
+
+  .chat-markdown tbody tr {
+    @apply bg-white;
+  }
 }
 
 @font-face {

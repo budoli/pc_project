@@ -34,23 +34,20 @@ const ChatPage = () => {
     setLoading(true);
 
     try {
-      let activeConversationId = currentConversationId;
+      if (!currentConversationId) {
+        const result = await createConversation(message);
 
-      if (!activeConversationId) {
-        const conversation = await createConversation(message);
-        activeConversationId = conversation.conversationId;
+        navigate(`/chat/${result.conversation.conversationId}`, {
+          replace: true,
+        });
+        setMessages((prev) => [...prev, toChatMessage(result.assistantMessage)]);
+        return;
       }
 
       const result = await sendConversationMessage(
-        activeConversationId,
+        currentConversationId,
         message,
       );
-
-      if (!currentConversationId) {
-        navigate(`/chat/${activeConversationId}`, {
-          replace: true,
-        });
-      }
 
       setMessages((prev) => [...prev, toChatMessage(result.assistantMessage)]);
     } catch {

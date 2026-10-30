@@ -43,6 +43,9 @@ class QdrantService:
       points=points
     )
   
+  def count(self) -> int:
+    return self.client.count(collection_name=COLLECTION_NAME, exact=True).count
+
   def search(self, vector: list[float], limit: int=5) :
     result = self.client.query_points(
       collection_name=COLLECTION_NAME,
